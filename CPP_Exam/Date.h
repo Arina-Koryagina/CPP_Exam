@@ -3,19 +3,22 @@
 #include"Time.h"
 #include"String.h"
 
-class Date
+namespace exam
 {
-	int day;
-	int month;
-	int year;
-	Time time;
+	class Date
+	{
+		int day;
+		int month;
+		int year;
+		Time time;
 
-public:
-	Date();
-	Date(int d, int m, int y, Time t);
-	Date(String s);
+	public:
+		Date();
+		Date(int d, int m, int y, Time t);
+		Date(String s);
 
-	String formDate() const;
+		String formDate() const;
 
-	friend std::ostream& operator<<(std::ostream& out, const Date& obj);
-};
+		friend std::ostream& operator<<(std::ostream& out, const Date& obj);
+	};
+}

@@ -4,71 +4,74 @@
 #include <cstdlib>
 #include <cassert>
 
-class String
+namespace exam
 {
-	char* str      = nullptr;
-	int   size     = 0;
-	int   capacity = 0;
-
-	int lenStr(const char* str) const
+	class String
 	{
-		int i = 0;
-		if (str != nullptr)
+		char* str = nullptr;
+		int   size = 0;
+		int   capacity = 0;
+
+		int lenStr(const char* str) const
 		{
-			while (str[i] != '\0')
+			int i = 0;
+			if (str != nullptr)
 			{
-				i++;
+				while (str[i] != '\0')
+				{
+					i++;
+				}
 			}
+			return i;
 		}
-		return i;
-	}
 
-public:
-	String();
-	String(int l);
-	String(const char* line);
-	String(const String& obj);
+	public:
+		String();
+		String(int l);
+		String(const char* line);
+		String(const String& obj);
 
-	String&    operator=(const String& obj);
+		String& operator=(const String& obj);
 
-	String     operator+(const String& obj)  const;
-	String     operator*(int times)          const;
-	String&    operator+=(const String& obj);
-	String&    operator*=(int times);
+		String     operator+(const String& obj)  const;
+		String     operator*(int times)          const;
+		String& operator+=(const String& obj);
+		String& operator*=(int times);
 
-	const char operator[](int index)         const;
-	char&      operator[](int index);
-	void       operator()(const char* line);
-	void       operator()(const String& obj);
+		const char operator[](int index)         const;
+		char& operator[](int index);
+		void       operator()(const char* line);
+		void       operator()(const String& obj);
 
-	bool       operator==(const String& obj) const;
-	bool       operator!=(const String& obj) const;
-	bool       operator<(const String& obj)  const;
-	bool       operator>(const String& obj)  const;
-	bool       operator<=(const String& obj) const;
-	bool       operator>=(const String& obj) const;
+		bool       operator==(const String& obj) const;
+		bool       operator!=(const String& obj) const;
+		bool       operator<(const String& obj)  const;
+		bool       operator>(const String& obj)  const;
+		bool       operator<=(const String& obj) const;
+		bool       operator>=(const String& obj) const;
 
-	String     operator+(int value)          const;
-	String&    operator+=(int value);
+		String     operator+(int value)          const;
+		String& operator+=(int value);
 
-	friend std::ostream& operator<<(std::ostream& out, const String& s);
-	friend std::istream& operator>>(std::istream& in, String& s);
+		friend std::ostream& operator<<(std::ostream& out, const String& s);
+		friend std::istream& operator>>(std::istream& in, String& s);
 
-	operator char* () const;
-	operator int   () const;
+		operator char* () const;
+		operator int() const;
 
-	~String();
+		~String();
 
-	void        clear();
-	void        clear(int l);
+		void        clear();
+		void        clear(int l);
 
-	void        input();
-	void        input(const char* line);
+		void        input();
+		void        input(const char* line);
 
-	const char* getStr() const;
-	int         getLen() const;
+		const char* getStr() const;
+		int         getLen() const;
 
-	void        print()  const;
+		void        print()  const;
 
-	void        reverse();
-};
+		void        reverse();
+	};
+}
