@@ -21,12 +21,42 @@
     <ClCompile Include="md5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Date.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="String.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Func.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="md5.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleMenu.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Date.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="String.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
