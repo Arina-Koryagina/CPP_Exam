@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -144,17 +144,23 @@
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="sqlite3.c" />
     <ClCompile Include="String.cpp" />
+    <ClCompile Include="TestSystemApp.cpp" />
     <ClCompile Include="Time.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Admin.h" />
+    <ClInclude Include="TestSystemApp.h" />
     <ClInclude Include="ConsoleMenu.h" />
     <ClInclude Include="Date.h" />
     <ClInclude Include="Func.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="sqlite3.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="Time.h" />
+    <ClInclude Include="User.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

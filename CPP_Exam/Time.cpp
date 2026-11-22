@@ -1,6 +1,6 @@
 #include"Time.h"
 
-namespace exam
+namespace exm
 {
 	Time::Time() : Time(0) {}
 	Time::Time(int s) : Time(0, s) {}

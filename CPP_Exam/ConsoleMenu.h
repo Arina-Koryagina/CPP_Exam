@@ -1,15 +1,12 @@
 #pragma once
-#include <windows.h>
-#include <vector>
+#include <Windows.h>
 #include <iostream>
+#include <vector>
 #include <iomanip>
-#include <string>
 #include <conio.h>
+#include <string>
 #include "Settings.h"
-
-
-using std::cout;
-using std::endl;
+#include "Func.h"
 
 
 namespace ConsoleMenu
@@ -24,17 +21,9 @@ namespace ConsoleMenu
 		RIGHT = 77, LEFT = 75, UP = 72, DOWN = 80, ESC = 27, ENTER = 13
 	};
 
-	enum ConsoleColor
-	{
-		Black = 0, Blue = 1, Green = 2, Cyan = 3, Red = 4, Magenta = 5, Brown = 6, LightGray = 7, DarkGray = 8,
-		LightBlue = 9, LightGreen = 10, LightCyan = 11, LightRed = 12, LightMagenta = 13, Yellow = 14, White = 15
-	};
-
-	void setColor(int text, int background);
-
-	void setCursorPosition(int x, int y);
-
 	void frame(int width, int height, int xPos, int yPos);
+
+	void inputFrame(int width, int height, int x, int y, const std::string&& header);
 
 	class Menu
 	{
@@ -66,7 +55,7 @@ namespace ConsoleMenu
 		{
 			init();
 
-			std::vector<std::string> menuItems = { "Розмір екрану", "Колір тексту", "Колір фону" };
+			std::vector<std::string> menuItems = { "Screen size", "Text colour", "Background colour" };
 
 			int maxLengthItem = formatItems(menuItems);
 
@@ -87,57 +76,57 @@ namespace ConsoleMenu
 				{
 					if (i == selectedItem)
 					{
-						setColor(backColor, textColor);
-						setCursorPosition(x, y + i);
-						cout << std::setw(maxLengthItem) << std::left;
-						setCursorPosition(x, y + i);
-						cout << menuItems[i] << endl;
-						setColor(textColor, backColor);
+						Func::SetColor(backColor, textColor);
+						Func::SetCursor(x, y + i);
+						std::cout << std::setw(maxLengthItem) << std::left;
+						Func::SetCursor(x, y + i);
+						std::cout << menuItems[i] << '\n';
+						Func::SetColor(textColor, backColor);
 					}
 					else
 					{
-						setColor(textColor, backColor);
-						setCursorPosition(x, y + i);
-						cout << std::setw(maxLengthItem) << std::left;
-						setCursorPosition(x, y + i);
-						cout << menuItems[i] << endl;
-						setColor(backColor, textColor);
+						Func::SetColor(textColor, backColor);
+						Func::SetCursor(x, y + i);
+						std::cout << std::setw(maxLengthItem) << std::left;
+						Func::SetCursor(x, y + i);
+						std::cout << menuItems[i] << '\n';
+						Func::SetColor(backColor, textColor);
 					}
 				}
 				switch (selectedItem)
 				{
 				case 0:
-					setColor(backColor, backColor);
+					Func::SetColor(backColor, backColor);
 					frame(52, 4, widthConsole / 2 - 26, y + 5);
 					break;
 				case 1:
 					textColor = posArrowTextColor;
-					setColor(textColor, backColor);
+					Func::SetColor(textColor, backColor);
 					frame(52, 4, widthConsole / 2 - 26, y + 5);
-					setCursorPosition(widthConsole / 2 - 26 + 2, y + 5 + 1);
+					Func::SetCursor(widthConsole / 2 - 26 + 2, y + 5 + 1);
 					for (size_t i = 0; i < 16; i++)
 					{
-						setColor(textColor, i);
-						cout << "   ";
+						Func::SetColor(textColor, i);
+						std::cout << "   ";
 					}
 					break;
 				case 2:
 					backColor = posArrowBackColor;
-					setColor(textColor, backColor);
+					Func::SetColor(textColor, backColor);
 					frame(52, 4, widthConsole / 2 - 26, y + 5);
-					setCursorPosition(widthConsole / 2 - 26 + 2, y + 5 + 1);
+					Func::SetCursor(widthConsole / 2 - 26 + 2, y + 5 + 1);
 					for (size_t i = 0; i < 16; i++)
 					{
-						setColor(textColor, i);
-						cout << "   ";
+						Func::SetColor(textColor, i);
+						std::cout << "   ";
 					}
 					break;
 				}
-				setColor(textColor, backColor);
+				Func::SetColor(textColor, backColor);
 				int color = (selectedItem == 1) ? posArrowTextColor : posArrowBackColor;
-				setCursorPosition(widthConsole / 2 - 26 + 2 + color * 3, y + 5 + 2);
+				Func::SetCursor(widthConsole / 2 - 26 + 2 + color * 3, y + 5 + 2);
 				if (selectedItem != 0)
-					cout << " ^ ";
+					std::cout << " ^ ";
 				key = (KEY)_getch();
 				switch (key)
 				{
@@ -159,7 +148,7 @@ namespace ConsoleMenu
 				}
 				textColor = posArrowTextColor;
 				backColor = posArrowBackColor;
-				setColor(textColor, backColor);
+				Func::SetColor(textColor, backColor);
 			} while (key != KEY::ENTER);
 
 			//Settings::widthConsole = 110;
@@ -167,7 +156,7 @@ namespace ConsoleMenu
 			Settings::textColorConsole = textColor;
 			Settings::backColorConsole = backColor;
 
-			setColor(textColor, backColor);
+			Func::SetColor(textColor, backColor);
 			system("cls");
 		}
 
@@ -183,38 +172,38 @@ namespace ConsoleMenu
 			switch (ha)
 			{
 			case Center: x = (widthConsole - maxLengthItem) / 2; break;
-			case Left:   x = 0;	              break;
-			case Right:  x = widthConsole - maxLengthItem;     break;
+			case Left:   x = 0;	                                 break;
+			case Right:  x = widthConsole - maxLengthItem;       break;
 			}
 
-			//frame(maxLengthItem + 10, menuItems.size() + 4, x - 5, y - 2);
+			frame(widthConsole, heightConsole, 0, 0);
 
 			do
 			{
-				setColor(backColor, textColor);
-				setCursorPosition((widthConsole - menuName.length()) / 2, y - 2);
+				Func::SetColor(backColor, textColor);
+				Func::SetCursor((widthConsole - menuName.length()) / 2, y - 2);
 				std::cout << menuName;
-				setColor(textColor, backColor);
+				Func::SetColor(textColor, backColor);
 
 				for (int i = 0; i < menuItems.size(); i++)
 				{
 					if (i == selectedItem)
 					{
-						setColor(backColor, textColor);
-						setCursorPosition(x, y + i);
-						cout << std::setw(maxLengthItem) << std::left;
-						setCursorPosition(x, y + i);
-						cout << menuItems[i] << endl;
-						setColor(textColor, backColor);
+						Func::SetColor(backColor, textColor);
+						Func::SetCursor(x, y + i);
+						std::cout << std::setw(maxLengthItem) << std::left;
+						Func::SetCursor(x, y + i);
+						std::cout << menuItems[i] << '\n';
+						Func::SetColor(textColor, backColor);
 					}
 					else
 					{
-						setColor(textColor, backColor);
-						setCursorPosition(x, y + i);
-						cout << std::setw(maxLengthItem) << std::left;
-						setCursorPosition(x, y + i);
-						cout << menuItems[i] << endl;
-						setColor(backColor, textColor);
+						Func::SetColor(textColor, backColor);
+						Func::SetCursor(x, y + i);
+						std::cout << std::setw(maxLengthItem) << std::left;
+						Func::SetCursor(x, y + i);
+						std::cout << menuItems[i] << '\n';
+						Func::SetColor(backColor, textColor);
 					}
 				}
 				key = (KEY)_getch();
@@ -231,22 +220,22 @@ namespace ConsoleMenu
 			{
 				for (size_t i = 0; i < 2; i++)
 				{
-					setColor(textColor, backColor);
-					setCursorPosition(x, y + selectedItem);
-					cout << std::setw(maxLengthItem) << std::left;
-					setCursorPosition(x, y + selectedItem);
-					cout << menuItems[selectedItem] << endl;
+					Func::SetColor(textColor, backColor);
+					Func::SetCursor(x, y + selectedItem);
+					std::cout << std::setw(maxLengthItem) << std::left;
+					Func::SetCursor(x, y + selectedItem);
+					std::cout << menuItems[selectedItem] << '\n';
 					Sleep(200);
-					setColor(backColor, textColor);
-					setCursorPosition(x, y + selectedItem);
-					cout << std::setw(maxLengthItem) << std::left;
-					setCursorPosition(x, y + selectedItem);
-					cout << menuItems[selectedItem] << endl;
-					setColor(textColor, backColor);
+					Func::SetColor(backColor, textColor);
+					Func::SetCursor(x, y + selectedItem);
+					std::cout << std::setw(maxLengthItem) << std::left;
+					Func::SetCursor(x, y + selectedItem);
+					std::cout << menuItems[selectedItem] << '\n';
+					Func::SetColor(textColor, backColor);
 					Sleep(200);
 				}
 			}
-			setColor(textColor, backColor);
+			Func::SetColor(textColor, backColor);
 			structCursorInfo.bVisible = TRUE;
 			SetConsoleCursorInfo(hStdOut, &structCursorInfo);
 			system("cls");

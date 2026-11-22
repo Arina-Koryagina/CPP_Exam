@@ -1,6 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include"String.h"
 
-namespace exam
+namespace exm
 {
 	String::String() : String(80) {}
 	String::String(int l)

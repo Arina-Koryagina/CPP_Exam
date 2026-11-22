@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <cassert>
 
-namespace exam
+namespace exm
 {
 	class String
 	{

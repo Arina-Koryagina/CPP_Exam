@@ -1,6 +1,6 @@
 #include"Date.h"
 
-namespace exam
+namespace exm
 {
 	Date::Date() : Date(0, 0, 0, 0) {}
 

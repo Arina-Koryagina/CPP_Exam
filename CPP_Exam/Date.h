@@ -3,7 +3,7 @@
 #include"Time.h"
 #include"String.h"
 
-namespace exam
+namespace exm
 {
 	class Date
 	{
