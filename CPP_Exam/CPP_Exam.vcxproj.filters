@@ -83,5 +83,8 @@
     <ClInclude Include="Tests.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="Stats.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
