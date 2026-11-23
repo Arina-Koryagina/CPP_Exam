@@ -29,6 +29,7 @@ namespace test
 		    if (sqlite3_open("testing.db", &database) != SQLITE_OK)
 			    return 1;
             Admin::db = database;
+            User::db = database;
 
 		    std::vector<std::string> options = { "Log In", "Sign Up", "Settings", "Exit" };
 		    while (true)
@@ -46,7 +47,8 @@ namespace test
                     }
                     else if (result.role == LoginResult::Role::user)
                     {
-                        User::User::Menu(database, result.userId);
+                        User::User::setId(result.userId);
+                        User::User::Menu();
                     }
                     break;
                 }

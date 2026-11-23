@@ -42,6 +42,9 @@
     <ClCompile Include="TestSystemApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Admin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Func.h">
@@ -75,6 +78,9 @@
       <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="User.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tests.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>

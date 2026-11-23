@@ -139,6 +139,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Admin.cpp" />
     <ClCompile Include="ConsoleMenu.cpp" />
     <ClCompile Include="Date.cpp" />
     <ClCompile Include="md5.cpp" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Admin.h" />
+    <ClInclude Include="Tests.h" />
     <ClInclude Include="TestSystemApp.h" />
     <ClInclude Include="ConsoleMenu.h" />
     <ClInclude Include="Date.h" />

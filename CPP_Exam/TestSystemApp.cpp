@@ -3,7 +3,7 @@
 
 namespace test
 {
-    bool createTestTables(sqlite3* db)
+    static bool createTestTables(sqlite3* db)
     {
         const char* sql = R"SQL(
         PRAGMA foreign_keys = ON;
