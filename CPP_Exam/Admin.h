@@ -252,41 +252,60 @@ namespace Admin
                 ? reinterpret_cast<const char*>(savedLoginText) : "";
             sqlite3_finalize(stmt);
 
-            std::string newLogin;
-            std::cout << "Current login: " << currentLogin << '\n'
-                << "New login (Enter keeps current): ";
+            int x = (Settings::widthConsole - 40) / 2;
+            int y = (Settings::heightConsole - 10) / 2;
+            ConsoleMenu::inputFrame(50, 12, x, y, "              EDIT ADMIN");
+            Func::SetCursor(x, y + 2);
+            std::cout << "Note: Enter keeps current value.";
+
+            std::vector<std::string> items = { "Current login : ", "New login            : ", "New password         : ", "Confirm new password : " };
+            for (size_t i = 0; i < items.size(); i++)
+            {
+                Func::SetCursor(x, y + i + 3);
+                std::cout << items[i];
+            }
+            Func::SetCursor(x + 16, y + 3);
+            std::cout << currentLogin;
+
+            std::string newLogin, newPassword, confirmation, password;
+            Func::SetCursor(x + 23, y + 4);
             if (Func::readConsoleInput(newLogin) == Func::InputResult::cancelled)
                 return;
             if (newLogin.empty())
                 newLogin = currentLogin;
-
-            std::string newPassword;
-            std::cout << "New password (Enter keeps current): ";
-            if (Func::readConsoleInput(newPassword, true) == Func::InputResult::cancelled)
-                return;
-
-            std::string passwordHash;
-            if (!newPassword.empty())
+            do
             {
-                std::string confirmation;
-                std::cout << "Confirm new password: ";
-                if (Func::readConsoleInput(confirmation, true) == Func::InputResult::cancelled)
-                    return;
+                std::vector<std::string*> pass = { &newPassword, &confirmation };
+                for (size_t i = 0; i < pass.size(); i++)
+                {
+                    Func::SetCursor(x + 23, y + 5 + i);
+                    std::cout << "                   ";
+                }
+                for (size_t i = 0; i < pass.size(); i++)
+                {
+                    Func::SetCursor(x + 23, y + 5 + i);
+                    if (Func::readConsoleInput(*pass[i], true) == Func::InputResult::cancelled)
+                    {
+                        system("cls");
+                        return;
+                    }
+                }
+
                 if (newPassword != confirmation)
                 {
-                    std::cout << "Passwords do not match. Credentials were not changed.\n";
-                    system("pause");
-                    return;
+                    Func::SetCursor(x, y + 8);
+                    std::cout << "Passwords do not match. Try again.";
+                    Func::SetCursor(x, y + 9);
                 }
-                passwordHash = md5(newPassword);
-            }
-
-            if (newLogin.empty())
-            {
-                std::cout << "Login cannot be empty. Credentials were not changed.\n";
-                system("pause");
-                return;
-            }
+                else
+                {
+                    Func::SetCursor(x, y + 8);
+                    std::cout << "                                  ";
+                    Func::SetCursor(x, y + 9);
+                    break;
+                }
+            } while (true);
+            if (!newPassword.empty()) password = md5(newPassword);
 
             if (newLogin != currentLogin)
             {
@@ -295,6 +314,7 @@ namespace Admin
                     -1, &stmt, nullptr) != SQLITE_OK)
                 {
                     std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                    Func::SetCursor(x, y + 9);
                     system("pause");
                     return;
                 }
@@ -305,6 +325,7 @@ namespace Admin
                 if (userResult == SQLITE_ROW)
                 {
                     std::cout << "That login is already used by a guest.\n";
+                    Func::SetCursor(x, y + 9);
                     system("pause");
                     return;
                 }
@@ -316,7 +337,7 @@ namespace Admin
                 }
             }
 
-            const char* sql = passwordHash.empty()
+            const char* sql = password.empty()
                 ? "UPDATE admin SET login = ? WHERE id = 1;"
                 : "UPDATE admin SET login = ?, password_hash = ? WHERE id = 1;";
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -327,8 +348,8 @@ namespace Admin
             }
 
             sqlite3_bind_text(stmt, 1, newLogin.c_str(), -1, SQLITE_TRANSIENT);
-            if (!passwordHash.empty())
-                sqlite3_bind_text(stmt, 2, passwordHash.c_str(), -1, SQLITE_TRANSIENT);
+            if (!password.empty())
+                sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_TRANSIENT);
 
             const int result = sqlite3_step(stmt);
             const int changedRows = sqlite3_changes(db);
@@ -336,11 +357,13 @@ namespace Admin
             sqlite3_finalize(stmt);
 
             if (result == SQLITE_DONE && changedRows == 1)
-                std::cout << "Admin credentials updated.\n";
+                std::cout << "Admin credentials updated.";
             else if (result == SQLITE_DONE)
-                std::cout << "Admin account was not changed.\n";
+                std::cout << "Admin account was not changed.";
             else
                 std::cerr << "Could not update admin credentials: " << error << '\n';
+
+            Func::SetCursor(x, y + 9);
             system("pause");
         }
 

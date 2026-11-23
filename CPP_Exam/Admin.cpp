@@ -414,10 +414,10 @@ namespace Admin
             }
         } while (true);
 
-        if (!newLogin.empty()) login = newLogin;
-        if (!newName.empty()) fullName = newName;
-        if (!newAddress.empty()) address = newAddress;
-        if (!newPhone.empty()) phone = newPhone;
+        if (!newLogin.empty())    login = newLogin;
+        if (!newName.empty())     fullName = newName;
+        if (!newAddress.empty())  address = newAddress;
+        if (!newPhone.empty())    phone = newPhone;
         if (!newPassword.empty()) password = newPassword;
     
         const char* updateSql =
