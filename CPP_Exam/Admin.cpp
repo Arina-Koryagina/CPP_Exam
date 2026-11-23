@@ -331,13 +331,21 @@ namespace Admin
             std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
             return;
         }
-    
+
+        int x = (Settings::widthConsole - 40) / 2;
+        int y = (Settings::heightConsole - 10) / 2;
+        ConsoleMenu::inputFrame(50, 14, x, y, "              EDIT  USER");
+        Func::SetCursor(x, y + 2);
+        std::cout << "Note: Enter keeps current value.";
+
         sqlite3_bind_int(stmt, 1, userId);
     
         if (sqlite3_step(stmt) != SQLITE_ROW)
         {
             sqlite3_finalize(stmt);
+            Func::SetCursor(x, y + 9);
             std::cout << "User not found.";
+            Func::SetCursor(x, y + 10);
             system("pause");
             return;
         }
@@ -349,49 +357,68 @@ namespace Admin
                     : std::string{};
             };
     
-        std::string login = readColumn(0);
+        std::string login    = readColumn(0);
         std::string fullName = readColumn(1);
-        std::string address = readColumn(2);
-        std::string phone = readColumn(3);
+        std::string address  = readColumn(2);
+        std::string phone    = readColumn(3);
         sqlite3_finalize(stmt);
-    
-        std::string newLogin, newName, newAddress, newPhone;
-    
-        std::cout << "New login (Enter keeps " << login << "): ";
-        std::getline(std::cin, newLogin);
-    
-        std::cout << "New full name (Enter keeps " << fullName << "): ";
-        std::getline(std::cin, newName);
-    
-        std::cout << "New address (Enter keeps current): ";
-        std::getline(std::cin, newAddress);
-    
-        std::cout << "New phone (Enter keeps " << phone << "): ";
-        std::getline(std::cin, newPhone);
-    
+        
+        std::vector<std::string> items = { "New full name        : ", "New home address     : ", "New phone            : ", "New login            : ", "New password         : ", "Confirm password     : " };
+        for (size_t i = 0; i < items.size(); i++)
+        {
+            Func::SetCursor(x, y + i + 3);
+            std::cout << items[i];
+        }
+
+        std::string newLogin, newName, newAddress, newPhone, newPassword, confirmation, password;
+        std::vector<std::string*> info = { &newName, &newAddress, &newPhone, &newLogin };
+        for (size_t i = 0; i < info.size(); i++)
+        {
+            Func::SetCursor(x + 23, y + 3 + i);
+            if (Func::readConsoleInput(*info[i]) == Func::InputResult::cancelled)
+            {
+                system("cls");
+                return;
+            }
+        }
+        do
+        {
+            std::vector<std::string*> pass = { &newPassword, &confirmation };
+            for (size_t i = 0; i < pass.size(); i++)
+            {
+                Func::SetCursor(x + 23, y + 3 + i + info.size());
+                std::cout << "                   ";
+            }
+            for (size_t i = 0; i < pass.size(); i++)
+            {
+                Func::SetCursor(x + 23, y + 3 + i + info.size());
+                if (Func::readConsoleInput(*pass[i], true) == Func::InputResult::cancelled)
+                {
+                    system("cls");
+                    return;
+                }
+            }
+
+            if (newPassword != confirmation)
+            {
+                Func::SetCursor(x, y + 6 + info.size());
+                std::cout << "Passwords do not match. Try again.";
+                Func::SetCursor(x, y + 7 + info.size());
+            }
+            else
+            {
+                Func::SetCursor(x, y + 6 + info.size());
+                std::cout << "                                  ";
+                Func::SetCursor(x, y + 7 + info.size());
+                break;
+            }
+        } while (true);
+
         if (!newLogin.empty()) login = newLogin;
         if (!newName.empty()) fullName = newName;
         if (!newAddress.empty()) address = newAddress;
         if (!newPhone.empty()) phone = newPhone;
-    
-        std::string newPassword, passwordHash;
-        std::cout << "New password (Enter keeps current): ";
-        //newPassword = readMaskedPassword();
-    
-        if (!newPassword.empty())
-        {
-            std::cout << "Confirm new password: ";
-            //const std::string confirmation = readMaskedPassword();
-    
-            //if (newPassword != confirmation)
-            {
-                std::cout << "Passwords do not match.\n";
-                system("pause");
-                return;
-            }
-    
-            passwordHash = md5(newPassword);
-        }
+        if (!newPassword.empty()) password = newPassword;
     
         const char* updateSql =
             "UPDATE users SET login = ?, full_name = ?, home_address = ?, "
@@ -408,10 +435,10 @@ namespace Admin
         sqlite3_bind_text(stmt, 3, address.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt, 4, phone.c_str(), -1, SQLITE_TRANSIENT);
     
-        if (passwordHash.empty())
+        if (password.empty())
             sqlite3_bind_null(stmt, 5);
         else
-            sqlite3_bind_text(stmt, 5, passwordHash.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 5, password.c_str(), -1, SQLITE_TRANSIENT);
     
         sqlite3_bind_int(stmt, 6, userId);
     
@@ -419,12 +446,19 @@ namespace Admin
         sqlite3_finalize(stmt);
     
         if (result == SQLITE_DONE)
-            std::cout << "User updated.\n";
+        {
+            Func::SetCursor(x, y + 6 + info.size());
+            std::cout << "User updated.";
+        }
         else if (result == SQLITE_CONSTRAINT)
-            std::cout << "That login is already taken.\n";
+        {
+            Func::SetCursor(x, y + 6 + info.size());
+            std::cout << "That login is already taken.";
+        }
         else
             std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-    
+
+        Func::SetCursor(x, y + 7 + info.size());
         system("pause");
     }
     

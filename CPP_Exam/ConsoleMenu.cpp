@@ -1,5 +1,4 @@
 #include "ConsoleMenu.h"
-#include "Func.h"
 
 int ConsoleMenu::Menu::textColor = Settings::textColorConsole;
 int ConsoleMenu::Menu::backColor = Settings::backColorConsole;

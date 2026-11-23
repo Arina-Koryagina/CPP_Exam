@@ -675,7 +675,7 @@ namespace User
             const std::vector<std::string> options = {
                 "Take a test",
                 "Continue a test",
-                "Your info",
+                "My info",
                 "My results",
                 "Log out"
             };
