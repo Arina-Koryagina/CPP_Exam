@@ -3,6 +3,26 @@
 
 namespace test
 {
+    bool isDatabaseEmpty(sqlite3* db)
+    {
+        sqlite3_stmt* stmt = nullptr;
+
+        if (sqlite3_prepare_v2(
+            db,
+            "SELECT 1 FROM sqlite_master "
+            "WHERE type = 'table' AND name NOT LIKE 'sqlite_%' "
+            "LIMIT 1;",
+            -1, &stmt, nullptr) != SQLITE_OK)
+        {
+            return false;
+        }
+
+        const int result = sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
+        return result == SQLITE_DONE;
+    }
+
     static bool createTestTables(sqlite3* db)
     {
         const char* sql = R"SQL(
@@ -251,7 +271,7 @@ namespace test
         }
 
         std::string fullName, address, phone, loginName, password, confirmation;
-        std::vector<std::string*> info = { &fullName, &address, &phone, &loginName };
+        std::vector<std::string*> info = { &fullName, &address, &phone };
         for (size_t i = 0; i < info.size(); i++)
         {
             Func::SetCursor(x + 19, y + 2 + i);
@@ -263,33 +283,85 @@ namespace test
         }
         do
         {
-            std::vector<std::string*> pass = { &password, &confirmation };
-            for (size_t i = 0; i < pass.size(); i++)
+            for (size_t i = 0; i < 3; i++)
             {
                 Func::SetCursor(x + 19, y + 2 + i + info.size());
                 std::cout << "                   ";
             }
-            for (size_t i = 0; i < pass.size(); i++)
+            Func::SetCursor(x + 19, y + 2 + info.size());
+            if (Func::readConsoleInput(loginName) == Func::InputResult::cancelled)
             {
-                Func::SetCursor(x + 19, y + 2 + i + info.size());
-                if (Func::readConsoleInput(*pass[i], true) == Func::InputResult::cancelled)
-                {
-                    system("cls");
-                    return false;
-                }
+                system("cls");
+                return false;
             }
-
-            if (password != confirmation)
+            do
             {
-                Func::SetCursor(x, y + 5 + info.size());
-                std::cout << "Passwords do not match. Try again.";
-                Func::SetCursor(x, y + 6 + info.size());
+                std::vector<std::string*> pass = { &password, &confirmation };
+                for (size_t i = 0; i < 2; i++)
+                {
+                    Func::SetCursor(x + 19, y + 3 + i + info.size());
+                    std::cout << "                   ";
+                }
+                for (size_t i = 0; i < pass.size(); i++)
+                {
+                    Func::SetCursor(x + 19, y + 3 + i + info.size());
+                    if (Func::readConsoleInput(*pass[i], true) == Func::InputResult::cancelled)
+                    {
+                        system("cls");
+                        return false;
+                    }
+                }
+
+                if (password != confirmation)
+                {
+                    Func::SetCursor(x, y + 6 + info.size());
+                    std::cout << "Passwords do not match. Try again.   ";
+                    Func::SetCursor(x, y + 7 + info.size());
+                }
+                else
+                {
+                    Func::SetCursor(x, y + 6 + info.size());
+                    std::cout << "                                  ";
+                    Func::SetCursor(x, y + 7 + info.size());
+                    break;
+                }
+            } while (true);
+
+            if (loginName.empty() || password.empty())
+            {
+                Func::SetCursor(x, y + 9);
+                std::cout << "Login and/or password can't be empty.";
+                Func::SetCursor(x, y + 10); system("pause");
             }
             else
             {
-                Func::SetCursor(x, y + 5 + info.size());
-                std::cout << "                                  ";
-                Func::SetCursor(x, y + 6 + info.size());
+                sqlite3_stmt* adminStmt = nullptr;
+                if (sqlite3_prepare_v2(db,
+                    "SELECT 1 FROM admin WHERE login = ? LIMIT 1;",
+                    -1, &adminStmt, nullptr) != SQLITE_OK)
+                {
+                    std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                    return false;
+                }
+
+                sqlite3_bind_text(adminStmt, 1, loginName.c_str(), -1, SQLITE_TRANSIENT);
+                const int adminResult = sqlite3_step(adminStmt);
+                sqlite3_finalize(adminStmt);
+
+                if (adminResult == SQLITE_ROW)
+                {
+                    Func::SetCursor(x, y + 9);
+                    std::cout << "That login is used by the admin.     ";
+                    Func::SetCursor(x, y + 10); system("pause");
+                    continue;
+                }
+
+                if (adminResult != SQLITE_DONE)
+                {
+                    std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                    return false;
+                }
+
                 break;
             }
         } while (true);
@@ -322,7 +394,7 @@ namespace test
             if (sqlite3_errcode(db) == SQLITE_CONSTRAINT)
             {
                 Func::SetCursor(x, y + 9);
-                std::cout << "That login is already taken.";
+                std::cout << "That login is already taken.         ";
                 Func::SetCursor(x, y + 10); system("pause");
             }
             else

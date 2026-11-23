@@ -226,6 +226,124 @@ namespace Admin
         std::string login;
         std::string passwordHash;
 
+        static void changeCredentials()
+        {
+            sqlite3_stmt* stmt = nullptr;
+            if (sqlite3_prepare_v2(db,
+                "SELECT login FROM admin WHERE id = 1;",
+                -1, &stmt, nullptr) != SQLITE_OK)
+            {
+                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                system("pause");
+                return;
+            }
+
+            if (sqlite3_step(stmt) != SQLITE_ROW)
+            {
+                std::cerr << "Could not load the admin account: "
+                    << sqlite3_errmsg(db) << '\n';
+                sqlite3_finalize(stmt);
+                system("pause");
+                return;
+            }
+
+            const auto* savedLoginText = sqlite3_column_text(stmt, 0);
+            const std::string currentLogin = savedLoginText
+                ? reinterpret_cast<const char*>(savedLoginText) : "";
+            sqlite3_finalize(stmt);
+
+            std::string newLogin;
+            std::cout << "Current login: " << currentLogin << '\n'
+                << "New login (Enter keeps current): ";
+            if (Func::readConsoleInput(newLogin) == Func::InputResult::cancelled)
+                return;
+            if (newLogin.empty())
+                newLogin = currentLogin;
+
+            std::string newPassword;
+            std::cout << "New password (Enter keeps current): ";
+            if (Func::readConsoleInput(newPassword, true) == Func::InputResult::cancelled)
+                return;
+
+            std::string passwordHash;
+            if (!newPassword.empty())
+            {
+                std::string confirmation;
+                std::cout << "Confirm new password: ";
+                if (Func::readConsoleInput(confirmation, true) == Func::InputResult::cancelled)
+                    return;
+                if (newPassword != confirmation)
+                {
+                    std::cout << "Passwords do not match. Credentials were not changed.\n";
+                    system("pause");
+                    return;
+                }
+                passwordHash = md5(newPassword);
+            }
+
+            if (newLogin.empty())
+            {
+                std::cout << "Login cannot be empty. Credentials were not changed.\n";
+                system("pause");
+                return;
+            }
+
+            if (newLogin != currentLogin)
+            {
+                if (sqlite3_prepare_v2(db,
+                    "SELECT 1 FROM users WHERE login = ? LIMIT 1;",
+                    -1, &stmt, nullptr) != SQLITE_OK)
+                {
+                    std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                    system("pause");
+                    return;
+                }
+                sqlite3_bind_text(stmt, 1, newLogin.c_str(), -1, SQLITE_TRANSIENT);
+                const int userResult = sqlite3_step(stmt);
+                sqlite3_finalize(stmt);
+
+                if (userResult == SQLITE_ROW)
+                {
+                    std::cout << "That login is already used by a guest.\n";
+                    system("pause");
+                    return;
+                }
+                if (userResult != SQLITE_DONE)
+                {
+                    std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                    system("pause");
+                    return;
+                }
+            }
+
+            const char* sql = passwordHash.empty()
+                ? "UPDATE admin SET login = ? WHERE id = 1;"
+                : "UPDATE admin SET login = ?, password_hash = ? WHERE id = 1;";
+            if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
+            {
+                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                system("pause");
+                return;
+            }
+
+            sqlite3_bind_text(stmt, 1, newLogin.c_str(), -1, SQLITE_TRANSIENT);
+            if (!passwordHash.empty())
+                sqlite3_bind_text(stmt, 2, passwordHash.c_str(), -1, SQLITE_TRANSIENT);
+
+            const int result = sqlite3_step(stmt);
+            const int changedRows = sqlite3_changes(db);
+            const std::string error = sqlite3_errmsg(db);
+            sqlite3_finalize(stmt);
+
+            if (result == SQLITE_DONE && changedRows == 1)
+                std::cout << "Admin credentials updated.\n";
+            else if (result == SQLITE_DONE)
+                std::cout << "Admin account was not changed.\n";
+            else
+                std::cerr << "Could not update admin credentials: " << error << '\n';
+            system("pause");
+        }
+
     public:
         Admin() = default;
         Admin(const std::string& login, const std::string& password) : login(login), passwordHash(md5(password)) {}
@@ -255,7 +373,7 @@ namespace Admin
 
         static void Menu()
         {
-            std::vector<std::string> options = { "Tests", "Users", "Statistics", "Log Out" };
+            std::vector<std::string> options = { "Tests", "Users", "Statistics", "Change Login/Password", "Log Out" };
             while (true)
             {
                 int choice = ConsoleMenu::Menu::verticalMenu("   ADMIN MENU   ", options, ConsoleMenu::HorizontalAlignment::Center);
@@ -271,6 +389,9 @@ namespace Admin
                     Stats::Menu();
                     break;
                 case 3:
+                    changeCredentials();
+                    break;
+                case 4:
                 default:
                     return;
                 }

@@ -560,7 +560,7 @@ namespace Admin
                 {
                     const int testId = chooseTest(db, categoryId);
                     if (testId < 0)
-                        return;
+                        break; // back to Category list
 
                     std::string prompt;
                     if (!readField("Question text: ", prompt))
@@ -602,7 +602,7 @@ namespace Admin
                         {
                             const int questionId = chooseQuestion(testId);
                             if (questionId < 0)
-                                break;
+                                break; // back to Test list
 
                             addAnswer(categoryId, testId, questionId);
                         }
@@ -619,19 +619,19 @@ namespace Admin
             {
                 const int categoryId = chooseCategory(db);
                 if (categoryId < 0)
-                    return;
+                    return; // back to Main menu
 
                 while (true)
                 {
                     const int testId = chooseTest(db, categoryId);
                     if (testId < 0)
-                        break;
+                        break; // back to Category list
 
                     while (true)
                     {
                         const int questionId = chooseQuestion(testId);
                         if (questionId < 0)
-                            break;
+                            break; // back to Test list
 
                         addAnswer(categoryId, testId, questionId);
                     }
@@ -795,18 +795,16 @@ namespace Admin
                         if (questionId < 0)
                             break;
 
-                        while (true)
-                        {
-                            std::string newPrompt;
-                            if (!readField("New question text: ", newPrompt))
-                                break;
+                        std::string newPrompt;
+                        if (!readField("New question text: ", newPrompt))
+                            break;
 
-                            updateText(
-                                "UPDATE questions SET prompt = ? WHERE id = ?;",
-                                newPrompt,
-                                questionId,
-                                "Question updated.");
-                        }
+                        updateText(
+                            "UPDATE questions SET prompt = ? WHERE id = ?;",
+                            newPrompt,
+                            questionId,
+                            "Question updated.");
+                        
                     }
                 }
             }
