@@ -7,6 +7,7 @@
 #include "ConsoleMenu.h"
 #include "Func.h"
 #include "Tests.h"
+#include "Stats.h"
 
 namespace Admin
 {
@@ -23,22 +24,6 @@ namespace Admin
         static void edit();
 
         static void del();
-
-    public:
-        static void Menu();
-    };
-
-    class Stats
-    {
-        static int chooseId(const char* sql, int parentId, const char* title);
-
-        static void showReport(const char* sql, int id, const char* title);
-
-        static void byCategory();
-
-        static void byTest();
-
-        static void byUser();
 
     public:
         static void Menu();
