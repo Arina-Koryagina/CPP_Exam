@@ -443,75 +443,6 @@ namespace User
             system("pause");
         }
 
-        static void showProfile()
-        {
-            sqlite3_stmt* stmt = nullptr;
-            const char* sql =
-                "SELECT full_name, login, home_address, phone "
-                "FROM users WHERE id = ?;";
-
-            if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
-            {
-                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-                system("pause");
-                return;
-            }
-
-            sqlite3_bind_int(stmt, 1, userId);
-
-            const int result = sqlite3_step(stmt);
-
-            if (result == SQLITE_ROW)
-            {
-                auto columnText = [stmt](int column)
-                    {
-                        const auto* value = sqlite3_column_text(stmt, column);
-                        return value
-                            ? std::string(reinterpret_cast<const char*>(value))
-                            : std::string{};
-                    };
-
-                const std::vector<std::string> data = {
-                    columnText(0), // full_name
-                    columnText(1), // login
-                    columnText(2), // home_address
-                    columnText(3)  // phone
-                };
-
-                const std::vector<std::string> labels = {
-                    "Name    : ",
-                    "Login   : ",
-                    "Address : ",
-                    "Phone   : "
-                };
-
-                int x = (Settings::widthConsole - 30) / 2;
-                int y = (Settings::heightConsole -
-                    static_cast<int>(data.size()) - 4) / 2;
-
-                ConsoleMenu::infoFrame(40, 10, x, &y, "USER DETAILS");
-
-                for (size_t i = 0; i < data.size(); ++i)
-                {
-                    Func::SetCursor(x, y + static_cast<int>(i));
-                    std::cout << labels[i] << data[i];
-                }
-
-                Func::SetCursor(x, y + static_cast<int>(data.size()) + 1);
-            }
-            else if (result == SQLITE_DONE)
-            {
-                ConsoleMenu::output("Could not find your profile");
-            }
-            else
-            {
-                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-            }
-
-            system("pause");
-            sqlite3_finalize(stmt);
-        }
-
         static void showAttemptResult(int attemptId)
         {
             sqlite3_stmt* stmt = nullptr;
@@ -622,6 +553,64 @@ namespace User
         static void setId(int id)
         {
             userId = id;
+        }
+
+        static void showProfile()
+        {
+            sqlite3_stmt* stmt = nullptr;
+
+            if (sqlite3_prepare_v2(db,
+                "SELECT full_name, login, home_address, phone "
+                "FROM users WHERE id = ?;",
+                -1, &stmt, nullptr) != SQLITE_OK)
+            {
+                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                return;
+            }
+
+            sqlite3_bind_int(stmt, 1, userId);
+
+            int result = sqlite3_step(stmt);
+            if (result == SQLITE_ROW)
+            {
+                auto columnText = [stmt](int column)
+                    {
+                        const auto* value = sqlite3_column_text(stmt, column);
+                        return value
+                            ? std::string(reinterpret_cast<const char*>(value))
+                            : std::string{};
+                    };
+
+                std::vector<std::string> text = { "Name    : ", "Login   : ", "Address : ", "Phone   : " };
+                std::vector<std::string> data = {
+                                                    columnText(0), // full_name
+                                                    columnText(1), // login
+                                                    columnText(2), // home_address
+                                                    columnText(3)  // phone
+                                                };
+                
+                int x = (Settings::widthConsole - 30) / 2;
+                int y = (Settings::heightConsole - text.size() - 2) / 2;
+                ConsoleMenu::infoFrame(40, 10, x, &y, "USER DETAILS");
+
+                for (size_t i = 0; i < text.size(); i++)
+                {
+                    Func::SetCursor(x, y + i);
+                    std::cout << text[i] << data[i];
+                }
+                Func::SetCursor(x, y + text.size() + 1);
+            }
+            else if (result == SQLITE_DONE)
+            {
+                ConsoleMenu::output("Could not find user profile");
+            }
+            else
+            {
+                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+            }
+
+            system("pause");
+            sqlite3_finalize(stmt);
         }
 
         static void showResults()

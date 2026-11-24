@@ -143,6 +143,7 @@ namespace Admin
             system("cls");
             bool foundQuestions = false;
             int questionResult;
+            std::vector<std::string> lines;
 
             while ((questionResult = sqlite3_step(questionStmt)) == SQLITE_ROW)
             {
@@ -155,7 +156,7 @@ namespace Admin
                 const std::string prompt =
                     promptText ? reinterpret_cast<const char*>(promptText) : "";
 
-                std::cout << "\n" << position << ". " << prompt << '\n';
+                lines.push_back(std::to_string(position) + ". " + prompt);
 
                 sqlite3_stmt* answerStmt = nullptr;
                 if (sqlite3_prepare_v2(db,
@@ -175,17 +176,13 @@ namespace Admin
                 while ((answerResult = sqlite3_step(answerStmt)) == SQLITE_ROW)
                 {
                     const auto* answerText = sqlite3_column_text(answerStmt, 0);
-                    const int isCorrect = sqlite3_column_int(answerStmt, 1);
+                    const int isCorrect    = sqlite3_column_int(answerStmt, 1);
+                    const std::string answer = answerText
+                        ? reinterpret_cast<const char*>(answerText)
+                        : "";
 
-                    std::cout << "   - "
-                        << (answerText
-                            ? reinterpret_cast<const char*>(answerText)
-                            : "");
-
-                    if (isCorrect)
-                        std::cout << "  [correct]";
-
-                    std::cout << '\n';
+                    lines.push_back("   - " + answer +
+                        (isCorrect ? "  [correct]" : ""));
                 }
 
                 sqlite3_finalize(answerStmt);
@@ -198,6 +195,7 @@ namespace Admin
                     return;
                 }
             }
+
 
             sqlite3_finalize(questionStmt);
 
@@ -212,7 +210,22 @@ namespace Admin
                         ConsoleMenu::HorizontalAlignment::Center);
                 return;
             }
+            const int frameWidth = Settings::widthConsole - 10;
+            const int contentWidth = frameWidth - 10;
+            const int frameHeight = static_cast<int>(lines.size()) + 6;
 
+            int x = (Settings::widthConsole - contentWidth) / 2;
+            int y = (Settings::heightConsole - frameHeight) / 2;
+
+            ConsoleMenu::infoFrame(frameWidth, frameHeight, x, &y, "TEST PREVIEW");
+
+            for (size_t i = 0; i < lines.size(); ++i)
+            {
+                Func::SetCursor(x, y + static_cast<int>(i));
+                std::cout << lines[i];
+            }
+
+            Func::SetCursor(x, y + static_cast<int>(lines.size()) + 1);
             system("pause");
         }
 

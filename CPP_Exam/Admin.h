@@ -14,8 +14,6 @@ namespace Admin
 
     class Users
     {
-        static bool chooseUserId(int& userId);
-
         static void show();
 
         static void add();

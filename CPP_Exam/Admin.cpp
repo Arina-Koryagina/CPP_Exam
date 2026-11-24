@@ -25,69 +25,6 @@ namespace Admin
         return true;
     }
 
-    bool Users::chooseUserId(int& userId)
-    {
-        std::vector<int> userIds;
-        std::vector<std::string> options;
-    
-        sqlite3_stmt* stmt = nullptr;
-        const char* sql =
-            "SELECT id, login, full_name "
-            "FROM users ORDER BY full_name;";
-    
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
-        {
-            std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-            return false;
-        }
-    
-        int result;
-        while ((result = sqlite3_step(stmt)) == SQLITE_ROW)
-        {
-            userIds.push_back(sqlite3_column_int(stmt, 0));
-    
-            const auto* loginText = sqlite3_column_text(stmt, 1);
-            const auto* nameText = sqlite3_column_text(stmt, 2);
-    
-            const std::string login =
-                loginText ? reinterpret_cast<const char*>(loginText) : "";
-            const std::string fullName =
-                nameText ? reinterpret_cast<const char*>(nameText) : "";
-    
-            options.push_back(fullName + "  (" + login + ")");
-        }
-    
-        sqlite3_finalize(stmt);
-    
-        if (result != SQLITE_DONE)
-        {
-            std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-            return false;
-        }
-    
-        const bool noUsers = userIds.empty();
-    
-        if (noUsers)
-            options.push_back("(No users registered)");
-    
-        options.push_back("Back");
-    
-        const int choice = ConsoleMenu::Menu::verticalMenu(
-            "   USERS   ",
-            options,
-            ConsoleMenu::HorizontalAlignment::Center);
-    
-        // Esc or Back cancels the selection.
-        if (choice < 0 || choice == static_cast<int>(options.size()) - 1)
-            return false;
-    
-        if (noUsers)
-            return false;
-    
-        userId = userIds[choice];
-        return true;
-    }
-
     void Users::show()
     {
         while (true)
@@ -107,54 +44,8 @@ namespace Admin
             if (selectedUserId < 0)
                 return;
     
-            if (sqlite3_prepare_v2(db,
-                "SELECT full_name, login, home_address, phone "
-                "FROM users WHERE id = ?;",
-                -1, &stmt, nullptr) != SQLITE_OK)
-            {
-                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-                return;
-            }
-    
-            sqlite3_bind_int(stmt, 1, selectedUserId);
-    
-            if (sqlite3_step(stmt) == SQLITE_ROW)
-            {
-                auto columnText = [stmt](int column)
-                    {
-                        const auto* value = sqlite3_column_text(stmt, column);
-                        return value
-                            ? std::string(reinterpret_cast<const char*>(value))
-                            : std::string{};
-                    };
-    
-                const std::string fullName = columnText(0);
-                const std::string login = columnText(1);
-                const std::string address = columnText(2);
-                const std::string phone = columnText(3);
-                std::vector<std::string> data = { fullName, login, address, phone };
-                std::vector<std::string> text = { "Name    : ", "Login   : ", "Address : ", "Phone   : " };
-    
-                int x = (Settings::widthConsole - 30) / 2;
-                int y = (Settings::heightConsole - data.size() - 2) / 2;
-                ConsoleMenu::infoFrame(40, 10, x, &y, "USER DETAILS");
-    
-                for (size_t i = 0; i < data.size(); i++)
-                {
-                    Func::SetCursor(x, y + i);
-                    std::cout << text[i] << data[i];
-                }
-                Func::SetCursor(x, y + data.size() + 1);
-                system("pause");
-            }
-            else
-            {
-                std::cerr << "Could not load that user: "
-                    << sqlite3_errmsg(db) << '\n';
-                system("pause");
-            }
-    
-            sqlite3_finalize(stmt);
+            User::User user(selectedUserId);
+            user.showProfile();
         }
     }
     
@@ -275,11 +166,22 @@ namespace Admin
     
     void Users::edit()
     {
-        int userId;
-        if (!chooseUserId(userId))
+        sqlite3_stmt* stmt = nullptr;
+        const char* sql =
+            "SELECT id, login, full_name "
+            "FROM users ORDER BY full_name;";
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
+        {
+            std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+            return;
+        }
+
+        int userId = Users::select(stmt);
+        if (userId < 0)
             return;
     
-        sqlite3_stmt* stmt = nullptr;
+        stmt = nullptr;
         const char* selectSql =
             "SELECT login, full_name, home_address, phone "
             "FROM users WHERE id = ?;";
@@ -421,13 +323,25 @@ namespace Admin
     {
         while (true)
         {
-            int userId;
-            if (!chooseUserId(userId))
-                return; // Go back to Admin Menu
+            sqlite3_stmt* stmt = nullptr;
+            const char* sql =
+                "SELECT id, login, full_name "
+                "FROM users ORDER BY full_name;";
+
+            if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
+            {
+                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                return;
+            }
+
+            int userId = Users::select(stmt);
+            if (userId < 0)
+                return;
+
 
             while (true)
             {
-                sqlite3_stmt* stmt = nullptr;
+                stmt = nullptr;
 
                 if (sqlite3_prepare_v2(db,
                     "SELECT COUNT(*) FROM attempts WHERE user_id = ?;",
