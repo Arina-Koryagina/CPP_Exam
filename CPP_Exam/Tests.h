@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "sqlite3.h"
+#include "Func.h"
 #include "ConsoleMenu.h"
 #include "FileHandler.h"
 
@@ -303,6 +304,7 @@ namespace Admin
 
             return true;
         }
+
         static int chooseQuestion(int testId)
         {
             std::vector<int> ids;
@@ -407,7 +409,7 @@ namespace Admin
 
             if (result == SQLITE_DONE && changedRows > 0)
             {
-                std::cout << successMessage;
+                ConsoleMenu::output(successMessage);
                 system("pause");
                 return true;
             }
@@ -659,7 +661,7 @@ namespace Admin
             };
 
             const int correctChoice = ConsoleMenu::Menu::verticalMenu(
-                "   ANSWER TYPE   ",
+                "   ANSWER  TYPE   ",
                 correctOptions,
                 ConsoleMenu::HorizontalAlignment::Center);
 
@@ -708,7 +710,7 @@ namespace Admin
 
             while (true)
             {
-                const int choice = ConsoleMenu::Menu::verticalMenu("    ADD  NEW    ", options, ConsoleMenu::HorizontalAlignment::Center);
+                const int choice = ConsoleMenu::Menu::verticalMenu("   ADD  NEW   ", options, ConsoleMenu::HorizontalAlignment::Center);
                 switch (choice)
                 {
                 case 0:
@@ -856,7 +858,7 @@ namespace Admin
                                 };
 
                                 const int correctChoice = ConsoleMenu::Menu::verticalMenu(
-                                    "   ANSWER TYPE   ",
+                                    "   ANSWER  TYPE   ",
                                     correctOptions,
                                     ConsoleMenu::HorizontalAlignment::Center);
 
@@ -911,7 +913,7 @@ namespace Admin
                 };
 
                 const int choice = ConsoleMenu::Menu::verticalMenu(
-                    "    EDIT    ",
+                    "   EDIT   ",
                     options,
                     ConsoleMenu::HorizontalAlignment::Center);
 
@@ -936,10 +938,12 @@ namespace Admin
             }
         }
 
+        static void deleteMenu() {}
+
     public:
         static void Menu()
         {
-            std::vector<std::string> options = { "Show", "Add New", "Edit", "File Handler", "Back" };
+            std::vector<std::string> options = { "Show", "Add New", "Delete", "Edit", "File Handler", "Back" };
             while (true)
             {
                 int choice = ConsoleMenu::Menu::verticalMenu("   TESTS MENU   ", options, ConsoleMenu::HorizontalAlignment::Center);
@@ -955,9 +959,12 @@ namespace Admin
                     editMenu();
                     break;
                 case 3:
-                    filesMenu();
+                    deleteMenu();
                     break;
                 case 4:
+                    filesMenu();
+                    break;
+                case 5:
                 default:
                     return;
                 }

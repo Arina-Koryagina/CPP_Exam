@@ -88,17 +88,17 @@ namespace Admin
 
                 const int columns = sqlite3_column_count(stmt);
 
-                for (int i = 0; i < columns; ++i)
+                for (int i = 0; i < columns; i++)
                 {
                     const auto* value = sqlite3_column_text(stmt, i);
 
-                    Func::SetCursor(x + 21, y + i);
+                    Func::SetCursor(x + 18, y + i);
                     std::cout << (value ? reinterpret_cast<const char*>(value) : "0");
                 }
             }
             else if (result == SQLITE_DONE)
             {
-                std::cout << "No completed attempts yet.";
+                ConsoleMenu::output("No completed attempts yet");
             }
             else
             {
@@ -125,7 +125,7 @@ namespace Admin
                 const int categoryId = chooseId(
                     "SELECT id, name FROM categories ORDER BY name;",
                     -1,
-                    "   CATEGORY STATISTICS   ");
+                    "   CATEGORY  STATISTICS   ");
 
                 if (categoryId < 0)
                     return;
@@ -141,7 +141,7 @@ namespace Admin
                 const int categoryId = chooseId(
                     "SELECT id, name FROM categories ORDER BY name;",
                     -1,
-                    "   CHOOSE CATEGORY   ");
+                    "   CHOOSE  CATEGORY   ");
 
                 if (categoryId < 0)
                     return;
@@ -196,20 +196,11 @@ namespace Admin
     public:
         static void Menu()
         {
-            const std::vector<std::string> options = {
-                "By category",
-                "By test",
-                "By user",
-                "Back"
-            };
+            const std::vector<std::string> options = { "By category", "By test", "By user", "Back" };
 
             while (true)
             {
-                const int choice = ConsoleMenu::Menu::verticalMenu(
-                    "   STATISTICS   ",
-                    options,
-                    ConsoleMenu::HorizontalAlignment::Center);
-
+                const int choice = ConsoleMenu::Menu::verticalMenu("   STATISTICS   ", options, ConsoleMenu::HorizontalAlignment::Center);
                 switch (choice)
                 {
                 case 0:

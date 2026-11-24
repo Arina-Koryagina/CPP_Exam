@@ -145,8 +145,7 @@ namespace Admin
                     std::cout << text[i] << data[i];
                 }
                 Func::SetCursor(x, y + data.size() + 1);
-                std::cout << "Press any key to return...";
-                _getch();
+                system("pause");
             }
             else
             {
@@ -269,6 +268,7 @@ namespace Admin
         }
         else
             std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+
         Func::SetCursor(x, y + 4 + info.size());
         system("pause");
     }
@@ -455,9 +455,10 @@ namespace Admin
 
                 if (attemptCount > 0)
                 {
-                    std::cout << "This user has " << attemptCount
-                        << " test attempt(s), so the account cannot be deleted "
-                        "without removing their history.\n";
+                    ConsoleMenu::output(
+                        "This user has " + std::to_string(attemptCount)
+                        + " test attempt(s), so the account cannot be deleted "
+                        "without removing their history");
                     system("pause");
                     return;
                 }
@@ -500,10 +501,14 @@ namespace Admin
                 sqlite3_finalize(stmt);
 
                 std::vector<std::string> options = { "Yes, delete", "No, go back" };
-                int choice = ConsoleMenu::Menu::verticalMenu(" CONFIRM " + fullName + " DELETE ", options, ConsoleMenu::HorizontalAlignment::Center);
+                std::string menuName = "   CONFIRM " + fullName + " DELETE   ";
+                if (menuName.size() % 2 != 0)
+                    menuName.insert(menuName.find(" DELETE"), " ");
+
+                int choice = ConsoleMenu::Menu::verticalMenu(menuName, options, ConsoleMenu::HorizontalAlignment::Center);
                 if (choice != 0)
                 {
-                    std::cout << "Deletion cancelled.\n";
+                    ConsoleMenu::output("Deletion cancelled");
                     system("pause");
                     break; // Leave this user and return to the delete-user list.
                 }
@@ -528,9 +533,9 @@ namespace Admin
                 sqlite3_finalize(stmt);
 
                 if (deleteResult == SQLITE_DONE && changedRows == 1)
-                    std::cout << "User deleted.\n";
+                    ConsoleMenu::output("User deleted");
                 else if (deleteResult == SQLITE_DONE)
-                    std::cout << "User not found.\n";
+                    ConsoleMenu::output("User not found");
                 else
                     std::cerr << "Could not delete user: " << error << '\n';
 

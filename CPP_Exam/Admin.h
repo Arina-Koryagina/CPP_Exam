@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <conio.h>
+#include <vector>
 #include <string>
 #include "sqlite3.h"
 #include "md5.h"
@@ -67,7 +67,7 @@ namespace Admin
             Func::SetCursor(x, y);
             std::cout << "Note: Enter keeps current value."; y++;
 
-            std::vector<std::string> items = { "Current login : ", "New login            : ", "New password         : ", "Confirm new password : " };
+            std::vector<std::string> items = { "Current login - ", "New login            : ", "New password         : ", "Confirm new password : " };
             for (size_t i = 0; i < items.size(); i++)
             {
                 Func::SetCursor(x, y + i);

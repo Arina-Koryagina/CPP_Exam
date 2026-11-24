@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "sqlite3.h"
 #include "ConsoleMenu.h"
 #include "Settings.h"
 #include "Admin.h"

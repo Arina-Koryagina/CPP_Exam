@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include <conio.h>
 #include <string>
 #include <vector>
 #include <format>
@@ -8,7 +7,6 @@
 #include "ConsoleMenu.h"
 #include "Settings.h"
 #include "Func.h"
-#include "Admin.h"
 #include "Tests.h"
 
 namespace User
@@ -78,7 +76,7 @@ namespace User
             options.push_back("Back");
 
             const int choice = ConsoleMenu::Menu::verticalMenu(
-                "   CONTINUE TEST   ",
+                "   CONTINUE  TEST   ",
                 options,
                 ConsoleMenu::HorizontalAlignment::Center);
 
@@ -374,7 +372,7 @@ namespace User
 
             if (questionCount == 0)
             {
-                ConsoleMenu::output("This question has no questions");
+                ConsoleMenu::output("This test has no questions");
                 system("pause");
                 return;
             }
@@ -420,12 +418,28 @@ namespace User
 
             const double percent =
                 100.0 * correctCount / questionCount;
+            std::string count = std::to_string(correctCount) + " / " + std::to_string(questionCount),
+                perc = std::format("{:.1f}%", percent),
+                graded = std::to_string(grade) + " / 12";
 
-            std::cout << "\nTest completed!\n"
-                << "Correct answers: " << correctCount << " / " << questionCount << '\n'
-                << "Percent correct: " << percent << "%\n"
-                << "Grade: " << grade << " / 12\n";
+            system("cls");
+            std::vector<std::string> text = { "Correct answers : ", "Percent correct : ", "Grade           : " };
+            std::vector<std::string> data = { count, perc, graded };
+            int x = (Settings::widthConsole - 30) / 2;
+            int y = (Settings::heightConsole - text.size() - 4) / 2;
+            ConsoleMenu::infoFrame(40, 6 + text.size(), x, &y, "TEST  RESULT");
+            for (size_t i = 0; i < text.size(); i++)
+            {
+                Func::SetCursor(x, y + i);
+                std::cout << text[i];
+            }
+            for (size_t i = 0; i < data.size(); i++)
+            {
+                Func::SetCursor(x + 18, y + i);
+                std::cout << data[i];
+            }
 
+            Func::SetCursor(x, y + 1 + text.size());
             system("pause");
         }
 
@@ -529,7 +543,7 @@ namespace User
 
                 if (result == SQLITE_DONE)
                 {
-                    ConsoleMenu::output("Could not find that completed result.");
+                    ConsoleMenu::output("Could not find that completed result");
                 }
                 else
                     std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
@@ -590,7 +604,7 @@ namespace User
             }
             for (size_t i = 0; i < data.size(); i++)
             {
-                Func::SetCursor(x + 19, y + i);
+                Func::SetCursor(x + 18, y + i);
                 std::cout << data[i];
             }
 
@@ -668,7 +682,7 @@ namespace User
 
             if (attemptIds.empty())
             {
-                ConsoleMenu::output("You have no completed tests yet");
+                ConsoleMenu::output("No completed attempts yet");
                 system("pause");
                 return;
             }
@@ -678,7 +692,7 @@ namespace User
             while (true)
             {
                 const int choice = ConsoleMenu::Menu::verticalMenu(
-                    "  USER RESULTS  ",
+                    "   USER RESULTS   ",
                     options,
                     ConsoleMenu::HorizontalAlignment::Center);
 
@@ -703,7 +717,7 @@ namespace User
             while (true)
             {
                 const int choice = ConsoleMenu::Menu::verticalMenu(
-                    "   USER MENU   ",
+                    "   USER  MENU   ",
                     options,
                     ConsoleMenu::HorizontalAlignment::Center);
 

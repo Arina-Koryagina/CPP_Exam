@@ -36,8 +36,8 @@ void ConsoleMenu::output(const std::string text)
 {
 	system("cls");
 	int width = (text.size() > 33) ? text.size() : 33,
-		x = (Settings::widthConsole - width - 10) / 2,
-		y = (Settings::heightConsole - 4) / 2;
+		x = (Settings::widthConsole - width) / 2,
+		y = (Settings::heightConsole) / 2;
 
 	ConsoleMenu::frame(width + 10, 5, x - 5, y - 2);
 
