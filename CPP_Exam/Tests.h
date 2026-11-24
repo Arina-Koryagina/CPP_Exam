@@ -4,6 +4,7 @@
 #include <string>
 #include "sqlite3.h"
 #include "ConsoleMenu.h"
+#include "FileHandler.h"
 
 class Test
 {
@@ -926,11 +927,6 @@ namespace Admin
                     return;
                 }
             }
-        }
-
-        static void filesMenu()
-        {
-
         }
 
     public:

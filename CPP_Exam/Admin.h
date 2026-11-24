@@ -7,7 +7,6 @@
 #include "ConsoleMenu.h"
 #include "Func.h"
 #include "Tests.h"
-#include "Stats.h"
 
 namespace Admin
 {
@@ -26,6 +25,8 @@ namespace Admin
         static void del();
 
     public:
+        static int select(sqlite3_stmt* stmt);
+
         static void Menu();
     };
 
@@ -202,31 +203,6 @@ namespace Admin
             return success;
         }
 
-        static void Menu()
-        {
-            std::vector<std::string> options = { "Tests", "Users", "Statistics", "Change Login/Password", "Log Out" };
-            while (true)
-            {
-                int choice = ConsoleMenu::Menu::verticalMenu("   ADMIN MENU   ", options, ConsoleMenu::HorizontalAlignment::Center);
-                switch (choice)
-                {
-                case 0:
-                    Tests::Menu();
-                    break;
-                case 1:
-                    Users::Menu();
-                    break;
-                case 2:
-                    Stats::Menu();
-                    break;
-                case 3:
-                    changeCredentials();
-                    break;
-                case 4:
-                default:
-                    return;
-                }
-            }
-        }
+        static void Menu();
     };
 }

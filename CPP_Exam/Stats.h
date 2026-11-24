@@ -1,5 +1,6 @@
 #pragma once
 #include"Admin.h"
+#include"User.h"
 
 namespace Admin
 {
@@ -171,7 +172,23 @@ namespace Admin
         {
             while (true)
             {
+                sqlite3_stmt* stmt = nullptr;
+                const char* sql =
+                    "SELECT id, login, full_name "
+                    "FROM users ORDER BY full_name;";
 
+                if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
+                {
+                    std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                    return;
+                }
+
+                const int selectedUserId = Users::select(stmt);
+                if (selectedUserId < 0)
+                    return;
+
+                User::User user(selectedUserId);
+                user.showResults();
             }
         }
 

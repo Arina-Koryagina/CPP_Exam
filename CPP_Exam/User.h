@@ -501,86 +501,6 @@ namespace User
             sqlite3_finalize(stmt);
         }
 
-        static void showResults()
-        {
-            std::vector<int> attemptIds;
-            std::vector<std::string> options;
-            sqlite3_stmt* stmt = nullptr;
-
-            const char* sql =
-                "SELECT a.id, c.name, t.title, a.finished_at, a.grade "
-                "FROM attempts AS a "
-                "JOIN tests AS t ON t.id = a.test_id "
-                "JOIN categories AS c ON c.id = t.category_id "
-                "WHERE a.user_id = ? AND a.status = 'completed' "
-                "ORDER BY a.finished_at DESC;";
-
-            if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
-            {
-                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-                system("pause");
-                return;
-            }
-
-            sqlite3_bind_int(stmt, 1, userId);
-
-            int result;
-            while ((result = sqlite3_step(stmt)) == SQLITE_ROW)
-            {
-                attemptIds.push_back(sqlite3_column_int(stmt, 0));
-
-                const auto* categoryText = sqlite3_column_text(stmt, 1);
-                const auto* testText = sqlite3_column_text(stmt, 2);
-                const auto* finishedText = sqlite3_column_text(stmt, 3);
-
-                const std::string category = categoryText
-                    ? reinterpret_cast<const char*>(categoryText) : "";
-                const std::string test = testText
-                    ? reinterpret_cast<const char*>(testText) : "";
-                const std::string finished = finishedText
-                    ? reinterpret_cast<const char*>(finishedText)
-                    : "Not available";
-                const int grade = sqlite3_column_int(stmt, 4);
-
-                options.push_back(
-                    category + " - " + test +
-                    " | " + finished +
-                    " | Grade: " + std::to_string(grade) + "/12");
-            }
-
-            sqlite3_finalize(stmt);
-
-            if (result != SQLITE_DONE)
-            {
-                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-                system("pause");
-                return;
-            }
-
-            if (attemptIds.empty())
-            {
-                std::cout << "You have no completed tests yet.\n";
-                system("pause");
-                return;
-            }
-
-            options.push_back("Back");
-
-            while (true)
-            {
-                const int choice = ConsoleMenu::Menu::verticalMenu(
-                    "   MY RESULTS   ",
-                    options,
-                    ConsoleMenu::HorizontalAlignment::Center);
-
-                if (choice < 0 || choice == static_cast<int>(options.size()) - 1)
-                    return; // Back to the User menu.
-
-                showAttemptResult(attemptIds[choice]);
-                // When the details screen returns, show this results list again.
-            }
-        }
-
         static void showAttemptResult(int attemptId)
         {
             sqlite3_stmt* stmt = nullptr;
@@ -665,9 +585,95 @@ namespace User
         }
 
     public:
+        User() = default;
+        explicit User(int id)
+        {
+            setId(id);
+        }
+
         static void setId(int id)
         {
             userId = id;
+        }
+
+        static void showResults()
+        {
+            std::vector<int> attemptIds;
+            std::vector<std::string> options;
+            sqlite3_stmt* stmt = nullptr;
+
+            const char* sql =
+                "SELECT a.id, c.name, t.title, a.finished_at, a.grade "
+                "FROM attempts AS a "
+                "JOIN tests AS t ON t.id = a.test_id "
+                "JOIN categories AS c ON c.id = t.category_id "
+                "WHERE a.user_id = ? AND a.status = 'completed' "
+                "ORDER BY a.finished_at DESC;";
+
+            if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
+            {
+                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                system("pause");
+                return;
+            }
+
+            sqlite3_bind_int(stmt, 1, userId);
+
+            int result;
+            while ((result = sqlite3_step(stmt)) == SQLITE_ROW)
+            {
+                attemptIds.push_back(sqlite3_column_int(stmt, 0));
+
+                const auto* categoryText = sqlite3_column_text(stmt, 1);
+                const auto* testText = sqlite3_column_text(stmt, 2);
+                const auto* finishedText = sqlite3_column_text(stmt, 3);
+
+                const std::string category = categoryText
+                    ? reinterpret_cast<const char*>(categoryText) : "";
+                const std::string test = testText
+                    ? reinterpret_cast<const char*>(testText) : "";
+                const std::string finished = finishedText
+                    ? reinterpret_cast<const char*>(finishedText)
+                    : "Not available";
+                const int grade = sqlite3_column_int(stmt, 4);
+
+                options.push_back(
+                    category + " - " + test +
+                    " | " + finished +
+                    " | Grade: " + std::to_string(grade) + "/12");
+            }
+
+            sqlite3_finalize(stmt);
+
+            if (result != SQLITE_DONE)
+            {
+                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+                system("pause");
+                return;
+            }
+
+            if (attemptIds.empty())
+            {
+                std::cout << "You have no completed tests yet.\n";
+                system("pause");
+                return;
+            }
+
+            options.push_back("Back");
+
+            while (true)
+            {
+                const int choice = ConsoleMenu::Menu::verticalMenu(
+                    "  USER RESULTS  ",
+                    options,
+                    ConsoleMenu::HorizontalAlignment::Center);
+
+                if (choice < 0 || choice == static_cast<int>(options.size()) - 1)
+                    return; // Back to the User menu.
+
+                showAttemptResult(attemptIds[choice]);
+                // When the details screen returns, show this results list again.
+            }
         }
 
         static void Menu()

@@ -1,4 +1,5 @@
 #include "Admin.h"
+#include "Stats.h"
 
 namespace Admin
 {
@@ -86,68 +87,25 @@ namespace Admin
         userId = userIds[choice];
         return true;
     }
-    
+
     void Users::show()
     {
         while (true)
         {
-            std::vector<int> userIds;
-            std::vector<std::string> options;
-    
             sqlite3_stmt* stmt = nullptr;
             const char* sql =
                 "SELECT id, login, full_name "
                 "FROM users ORDER BY full_name;";
-    
+
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
             {
                 std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
                 return;
             }
-    
-            int result;
-            while ((result = sqlite3_step(stmt)) == SQLITE_ROW)
-            {
-                const int id = sqlite3_column_int(stmt, 0);
-                const auto* loginText = sqlite3_column_text(stmt, 1);
-                const auto* nameText = sqlite3_column_text(stmt, 2);
-    
-                const std::string login =
-                    loginText ? reinterpret_cast<const char*>(loginText) : "";
-                const std::string fullName =
-                    nameText ? reinterpret_cast<const char*>(nameText) : "";
-    
-                userIds.push_back(id);
-                options.push_back(fullName + "  (" + login + ")");
-            }
-    
-            sqlite3_finalize(stmt);
-    
-            if (result != SQLITE_DONE)
-            {
-                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+
+            const int selectedUserId = select(stmt);
+            if (selectedUserId < 0)
                 return;
-            }
-    
-            const bool noUsers = userIds.empty();
-            if (noUsers)
-                options.push_back("(No users registered)");
-    
-            options.push_back("Back");
-    
-            const int choice = ConsoleMenu::Menu::verticalMenu(
-                "   USERS   ",
-                options,
-                ConsoleMenu::HorizontalAlignment::Center);
-    
-            // Esc or Back returns to the admin menu.
-            if (choice < 0 || choice == static_cast<int>(options.size()) - 1)
-                return;
-    
-            if (noUsers)
-                continue;
-    
-            const int selectedUserId = userIds[choice];
     
             if (sqlite3_prepare_v2(db,
                 "SELECT full_name, login, home_address, phone "
@@ -585,6 +543,56 @@ namespace Admin
         }
     }
 
+    int Users::select(sqlite3_stmt* stmt)
+    {
+        std::vector<int> userIds;
+        std::vector<std::string> options;
+
+        int result;
+        while ((result = sqlite3_step(stmt)) == SQLITE_ROW)
+        {
+            const int id = sqlite3_column_int(stmt, 0);
+            const auto* loginText = sqlite3_column_text(stmt, 1);
+            const auto* nameText = sqlite3_column_text(stmt, 2);
+
+            const std::string login =
+                loginText ? reinterpret_cast<const char*>(loginText) : "";
+            const std::string fullName =
+                nameText ? reinterpret_cast<const char*>(nameText) : "";
+
+            userIds.push_back(id);
+            options.push_back(fullName + "  (" + login + ")");
+        }
+
+        sqlite3_finalize(stmt);
+
+        if (result != SQLITE_DONE)
+        {
+            std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+            return -1;
+        }
+
+        const bool noUsers = userIds.empty();
+        if (noUsers)
+            options.push_back("(No users registered)");
+
+        options.push_back("Back");
+
+        const int choice = ConsoleMenu::Menu::verticalMenu(
+            "   USERS   ",
+            options,
+            ConsoleMenu::HorizontalAlignment::Center);
+
+        // Esc or Back returns to the admin menu.
+        if (choice < 0 || choice == static_cast<int>(options.size()) - 1)
+            return -1;
+
+        if (noUsers)
+            return -1;
+
+        return userIds[choice];
+    }
+
     void Users::Menu()
     {
         std::vector<std::string> options = { "Show All", "Add User", "Modify User", "Delete User", "Back" };
@@ -604,6 +612,33 @@ namespace Admin
                 break;
             case 3:
                 del();
+                break;
+            case 4:
+            default:
+                return;
+            }
+        }
+    }
+
+    void Admin::Menu()
+    {
+        std::vector<std::string> options = { "Tests", "Users", "Statistics", "Change Login/Password", "Log Out" };
+        while (true)
+        {
+            int choice = ConsoleMenu::Menu::verticalMenu("   ADMIN MENU   ", options, ConsoleMenu::HorizontalAlignment::Center);
+            switch (choice)
+            {
+            case 0:
+                Tests::Menu();
+                break;
+            case 1:
+                Users::Menu();
+                break;
+            case 2:
+                Stats::Menu();
+                break;
+            case 3:
+                changeCredentials();
                 break;
             case 4:
             default:
