@@ -3,6 +3,7 @@
 #include <conio.h>
 #include <string>
 #include <vector>
+#include <format>
 #include "sqlite3.h"
 #include "ConsoleMenu.h"
 #include "Settings.h"
@@ -524,17 +525,37 @@ namespace User
             sqlite3_bind_int(stmt, 1, attemptId);
             sqlite3_bind_int(stmt, 2, userId);
 
-            const int result = sqlite3_step(stmt);
+            system("cls");
+            std::vector<std::string> text = {   "Category        : ",
+                                                "Test            : ",
+                                                "Started         : ",
+                                                "Finished        : ",
+                                                "Correct answers : ",
+                                                "Percent correct : ",
+                                                "Grade           : " };
+            int x = (Settings::widthConsole - 30) / 2;
+            int y = (Settings::heightConsole - text.size() - 3) / 2;
+            ConsoleMenu::inputFrame(48, 6 + text.size(), x, y, "             TEST  RESULT");
+            for (size_t i = 0; i < text.size(); i++)
+            {
+                Func::SetCursor(x, y + i + 2);
+                std::cout << text[i];
+            }
 
+            const int result = sqlite3_step(stmt);
             if (result != SQLITE_ROW)
             {
                 sqlite3_finalize(stmt);
 
                 if (result == SQLITE_DONE)
-                    std::cout << "Could not find that completed result.\n";
+                {
+                    Func::SetCursor(x, y + 2 + text.size());
+                    std::cout << "Could not find that completed result.";
+                }
                 else
                     std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
 
+                Func::SetCursor(x, y + 3 + text.size());
                 system("pause");
                 return;
             }
@@ -569,19 +590,18 @@ namespace User
                 ? 100.0 * correctCount / questionCount
                 : 0.0;
 
-            system("cls");
-            std::cout << "             TEST RESULT\n\n"
-                << "Category        : " << category << '\n'
-                << "Test            : " << test << '\n'
-                << "Started         : " << started << '\n'
-                << "Finished        : " << finished << '\n'
-                << "Correct answers : " << correctCount
-                << " / " << questionCount << '\n'
-                << "Percent correct: " << percent << "%\n"
-                << "Grade           : " << grade << " / 12\n\n"
-                << "Press any key to return to your results...";
+            std::string count  = std::to_string(correctCount) + " / " + std::to_string(questionCount),
+                        perc   = std::format("{:.1f}%", percent),
+                        graded = std::to_string(grade) + " / 12";
+            std::vector<std::string> data = { category, test, started, finished, count, perc, graded};
+            for (size_t i = 0; i < data.size(); i++)
+            {
+                Func::SetCursor(x + 19, y + i + 2);
+                std::cout << data[i];
+            }
 
-            _getch();
+            Func::SetCursor(x, y + 3 + text.size());
+            system("pause");
         }
 
     public:

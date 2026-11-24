@@ -71,10 +71,10 @@ namespace Admin
             sqlite3_bind_int(stmt, 1, id);
 
             system("cls");
-            std::vector<std::string> text = { "Times completed    : ", "Average grade      : ", "Correct percentage : " };
+            std::vector<std::string> text = { "Times completed : ", "Average grade   : ", "Percent correct : " };
             int x = (Settings::widthConsole - 30) / 2;
             int y = (Settings::heightConsole - text.size() - 3) / 2;
-            ConsoleMenu::inputFrame(40, 9, x, y, title);
+            ConsoleMenu::inputFrame(40, 6 + text.size(), x, y, title);
             for (size_t i = 0; i < text.size(); i++)
             {
                 Func::SetCursor(x, y + i + 2);
@@ -88,7 +88,6 @@ namespace Admin
 
                 for (int i = 0; i < columns; ++i)
                 {
-                    const auto* name = sqlite3_column_name(stmt, i);
                     const auto* value = sqlite3_column_text(stmt, i);
 
                     Func::SetCursor(x + 21, y + i + 2);
@@ -129,7 +128,7 @@ namespace Admin
                 if (categoryId < 0)
                     return;
 
-                showReport(sql, categoryId, "CATEGORY STATISTICS");
+                showReport(sql, categoryId, "     CATEGORY  STATISTICS");
             }
         }
 
@@ -163,7 +162,7 @@ namespace Admin
                         "FROM attempts "
                         "WHERE test_id = ? AND status = 'completed';",
                         testId,
-                        "TEST STATISTICS");
+                        "       TEST  STATISTICS");
                 }
             }
         }
