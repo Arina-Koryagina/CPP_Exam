@@ -130,7 +130,7 @@ namespace ConsoleMenu
 				key = (KEY)_getch();
 				switch (key)
 				{
-				case KEY::UP:   if (selectedItem > 0)                   selectedItem--; break;
+				case KEY::UP:   if (selectedItem > 0)                    selectedItem--; break;
 				case KEY::DOWN: if (selectedItem < menuItems.size() - 1) selectedItem++; break;
 				case KEY::RIGHT:
 					if (posArrowTextColor < 15 && selectedItem == 1)
@@ -144,12 +144,12 @@ namespace ConsoleMenu
 					if (posArrowBackColor > 0 && selectedItem == 2)
 						posArrowBackColor--;
 					break;
-				case KEY::ENTER: break;
+				case KEY::ENTER: case KEY::ESC: break;
 				}
 				textColor = posArrowTextColor;
 				backColor = posArrowBackColor;
 				Func::SetColor(textColor, backColor);
-			} while (key != KEY::ENTER);
+			} while (key != KEY::ENTER && key != KEY::ESC);
 
 			//Settings::widthConsole = 110;
 			//Settings::heightConsole = 30;
@@ -209,8 +209,18 @@ namespace ConsoleMenu
 				key = (KEY)_getch();
 				switch (key)
 				{
-				case KEY::UP: if (selectedItem > 0)                      selectedItem--; break;
-				case KEY::DOWN: if (selectedItem < menuItems.size() - 1) selectedItem++; break;
+				case KEY::UP:
+					if (selectedItem >= 0)
+						(selectedItem == 0) ?
+						selectedItem = menuItems.size() - 1 :
+						selectedItem--;
+					break;
+				case KEY::DOWN:
+					if (selectedItem <= menuItems.size() - 1)
+						(selectedItem == menuItems.size() - 1) ?
+						selectedItem = 0 :
+						selectedItem++;
+					break;
 				case KEY::ESC: selectedItem = -1; break;
 				case KEY::ENTER: break;
 				}
