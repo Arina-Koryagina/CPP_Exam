@@ -137,14 +137,14 @@ namespace Admin
     
                 int x = (Settings::widthConsole - 30) / 2;
                 int y = (Settings::heightConsole - data.size() - 2) / 2;
-                ConsoleMenu::inputFrame(40, 10, x, y, "         USER DETAILS");
+                ConsoleMenu::infoFrame(40, 10, x, &y, "USER DETAILS");
     
                 for (size_t i = 0; i < data.size(); i++)
                 {
-                    Func::SetCursor(x, y + i + 2);
+                    Func::SetCursor(x, y + i);
                     std::cout << text[i] << data[i];
                 }
-                Func::SetCursor(x, y + data.size() + 3);
+                Func::SetCursor(x, y + data.size() + 1);
                 std::cout << "Press any key to return...";
                 _getch();
             }
@@ -162,12 +162,12 @@ namespace Admin
     void Users::add()
     {
         int x = (Settings::widthConsole - 40) / 2;
-        int y = (Settings::heightConsole - 10) / 2;
-        ConsoleMenu::inputFrame(50, 13, x, y, "               ADD USER");
+        int y = (Settings::heightConsole - 9) / 2;
+        ConsoleMenu::infoFrame(50, 13, x, &y, "ADD USER");
         std::vector<std::string> items = { "Full name        : ", "Home address     : ", "Phone            : ", "Login            : ", "Password         : ", "Confirm password : " };
         for (size_t i = 0; i < items.size(); i++)
         {
-            Func::SetCursor(x, y + i + 2);
+            Func::SetCursor(x, y + i);
             std::cout << items[i];
         }
     
@@ -175,7 +175,7 @@ namespace Admin
         std::vector<std::string*> info = { &fullName, &address, &phone, &login };
         for (size_t i = 0; i < info.size(); i++)
         {
-            Func::SetCursor(x + 19, y + 2 + i);
+            Func::SetCursor(x + 19, y + i);
             if (Func::readConsoleInput(*info[i]) == Func::InputResult::cancelled)
             {
                 system("cls");
@@ -187,12 +187,12 @@ namespace Admin
             std::vector<std::string*> pass = { &password, &confirmation };
             for (size_t i = 0; i < pass.size(); i++)
             {
-                Func::SetCursor(x + 19, y + 2 + i + info.size());
+                Func::SetCursor(x + 19, y + i + info.size());
                 std::cout << "                   ";
             }
             for (size_t i = 0; i < pass.size(); i++)
             {
-                Func::SetCursor(x + 19, y + 2 + i + info.size());
+                Func::SetCursor(x + 19, y + i + info.size());
                 if (Func::readConsoleInput(*pass[i], true) == Func::InputResult::cancelled)
                 {
                     system("cls");
@@ -202,15 +202,15 @@ namespace Admin
     
             if (password != confirmation)
             {
-                Func::SetCursor(x, y + 5 + info.size());
+                Func::SetCursor(x, y + 3 + info.size());
                 std::cout << "Passwords do not match. Try again.";
-                Func::SetCursor(x, y + 6 + info.size());
+                Func::SetCursor(x, y + 4 + info.size());
             }
             else
             {
-                Func::SetCursor(x, y + 5 + info.size());
+                Func::SetCursor(x, y + 3 + info.size());
                 std::cout << "                                  ";
-                Func::SetCursor(x, y + 6 + info.size());
+                Func::SetCursor(x, y + 4 + info.size());
                 break;
             }
         } while (true);
@@ -218,18 +218,18 @@ namespace Admin
         if (fullName.empty() || address.empty() || phone.empty() ||
             login.empty() || password.empty())
         {
-            Func::SetCursor(x, y + 5 + info.size());
+            Func::SetCursor(x, y + 3 + info.size());
             std::cout << "Fields cannot be empty.";
-            Func::SetCursor(x, y + 6 + info.size());
+            Func::SetCursor(x, y + 4 + info.size());
             system("pause");
             return;
         }
     
         if (password != confirmation)
         {
-            Func::SetCursor(x, y + 5 + info.size());
+            Func::SetCursor(x, y + 3 + info.size());
             std::cout << "Passwords do not match.";
-            Func::SetCursor(x, y + 6 + info.size());
+            Func::SetCursor(x, y + 4 + info.size());
             system("pause");
             return;
         }
@@ -259,17 +259,17 @@ namespace Admin
     
         if (result == SQLITE_DONE)
         {
-            Func::SetCursor(x, y + 5 + info.size());
+            Func::SetCursor(x, y + 3 + info.size());
             std::cout << "User created.";
         }
         else if (result == SQLITE_CONSTRAINT)
         {
-            Func::SetCursor(x, y + 5 + info.size());
+            Func::SetCursor(x, y + 3 + info.size());
             std::cout << "That login is already taken.";
         }
         else
             std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-        Func::SetCursor(x, y + 6 + info.size());
+        Func::SetCursor(x, y + 4 + info.size());
         system("pause");
     }
     
@@ -290,20 +290,12 @@ namespace Admin
             return;
         }
 
-        int x = (Settings::widthConsole - 40) / 2;
-        int y = (Settings::heightConsole - 10) / 2;
-        ConsoleMenu::inputFrame(50, 14, x, y, "              EDIT  USER");
-        Func::SetCursor(x, y + 2);
-        std::cout << "Note: Enter keeps current value.";
-
         sqlite3_bind_int(stmt, 1, userId);
     
         if (sqlite3_step(stmt) != SQLITE_ROW)
         {
             sqlite3_finalize(stmt);
-            Func::SetCursor(x, y + 9);
-            std::cout << "User not found.";
-            Func::SetCursor(x, y + 10);
+            ConsoleMenu::output("User not found");
             system("pause");
             return;
         }
@@ -320,11 +312,16 @@ namespace Admin
         std::string address  = readColumn(2);
         std::string phone    = readColumn(3);
         sqlite3_finalize(stmt);
-        
+
+        int x = (Settings::widthConsole - 40) / 2;
+        int y = (Settings::heightConsole - 10) / 2;
+        ConsoleMenu::infoFrame(50, 14, x, &y, "EDIT  USER");
+        Func::SetCursor(x, y);
+        std::cout << "Note: Enter keeps current value."; y++;
         std::vector<std::string> items = { "New full name        : ", "New home address     : ", "New phone            : ", "New login            : ", "New password         : ", "Confirm password     : " };
         for (size_t i = 0; i < items.size(); i++)
         {
-            Func::SetCursor(x, y + i + 3);
+            Func::SetCursor(x, y + i);
             std::cout << items[i];
         }
 
@@ -332,7 +329,7 @@ namespace Admin
         std::vector<std::string*> info = { &newName, &newAddress, &newPhone, &newLogin };
         for (size_t i = 0; i < info.size(); i++)
         {
-            Func::SetCursor(x + 23, y + 3 + i);
+            Func::SetCursor(x + 23, y + i);
             if (Func::readConsoleInput(*info[i]) == Func::InputResult::cancelled)
             {
                 system("cls");
@@ -344,12 +341,12 @@ namespace Admin
             std::vector<std::string*> pass = { &newPassword, &confirmation };
             for (size_t i = 0; i < pass.size(); i++)
             {
-                Func::SetCursor(x + 23, y + 3 + i + info.size());
+                Func::SetCursor(x + 23, y + i + info.size());
                 std::cout << "                   ";
             }
             for (size_t i = 0; i < pass.size(); i++)
             {
-                Func::SetCursor(x + 23, y + 3 + i + info.size());
+                Func::SetCursor(x + 23, y + i + info.size());
                 if (Func::readConsoleInput(*pass[i], true) == Func::InputResult::cancelled)
                 {
                     system("cls");
@@ -359,15 +356,15 @@ namespace Admin
 
             if (newPassword != confirmation)
             {
-                Func::SetCursor(x, y + 6 + info.size());
+                Func::SetCursor(x, y + 3 + info.size());
                 std::cout << "Passwords do not match. Try again.";
-                Func::SetCursor(x, y + 7 + info.size());
+                Func::SetCursor(x, y + 4 + info.size());
             }
             else
             {
-                Func::SetCursor(x, y + 6 + info.size());
+                Func::SetCursor(x, y + 3 + info.size());
                 std::cout << "                                  ";
-                Func::SetCursor(x, y + 7 + info.size());
+                Func::SetCursor(x, y + 4 + info.size());
                 break;
             }
         } while (true);
@@ -405,18 +402,18 @@ namespace Admin
     
         if (result == SQLITE_DONE)
         {
-            Func::SetCursor(x, y + 6 + info.size());
+            Func::SetCursor(x, y + 3 + info.size());
             std::cout << "User updated.";
         }
         else if (result == SQLITE_CONSTRAINT)
         {
-            Func::SetCursor(x, y + 6 + info.size());
+            Func::SetCursor(x, y + 3 + info.size());
             std::cout << "That login is already taken.";
         }
         else
             std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
 
-        Func::SetCursor(x, y + 7 + info.size());
+        Func::SetCursor(x, y + 4 + info.size());
         system("pause");
     }
     

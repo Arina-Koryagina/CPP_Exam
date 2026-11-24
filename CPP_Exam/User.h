@@ -128,7 +128,7 @@ namespace User
 
                     if (questionCount == 0)
                     {
-                        std::cout << "This test has no questions yet.\n";
+                        ConsoleMenu::output("This test has no questions yet");
                         system("pause");
                         continue; // Back to the test list.
                     }
@@ -200,7 +200,7 @@ namespace User
             if (sqlite3_step(stmt) != SQLITE_ROW)
             {
                 sqlite3_finalize(stmt);
-                std::cout << "Could not find an unfinished attempt.\n";
+                ConsoleMenu::output("Could not find an unfinished attempt");
                 system("pause");
                 return;
             }
@@ -294,8 +294,7 @@ namespace User
 
                 if (answerIds.empty())
                 {
-                    std::cout << "This question has no answers yet. "
-                        "Your attempt is saved for later.\n";
+                    ConsoleMenu::output("This question has no answers yet: attempt is saved");
                     system("pause");
                     return;
                 }
@@ -375,7 +374,7 @@ namespace User
 
             if (questionCount == 0)
             {
-                std::cout << "This test has no questions.\n";
+                ConsoleMenu::output("This question has no questions");
                 system("pause");
                 return;
             }
@@ -472,33 +471,30 @@ namespace User
                     "Phone   : "
                 };
 
-                const int x = (Settings::widthConsole - 30) / 2;
-                const int y = (Settings::heightConsole -
-                    static_cast<int>(data.size()) - 2) / 2;
+                int x = (Settings::widthConsole - 30) / 2;
+                int y = (Settings::heightConsole -
+                    static_cast<int>(data.size()) - 4) / 2;
 
-                ConsoleMenu::inputFrame(40, 10, x, y, "         USER DETAILS");
+                ConsoleMenu::infoFrame(40, 10, x, &y, "USER DETAILS");
 
                 for (size_t i = 0; i < data.size(); ++i)
                 {
-                    Func::SetCursor(x, y + static_cast<int>(i) + 2);
+                    Func::SetCursor(x, y + static_cast<int>(i));
                     std::cout << labels[i] << data[i];
                 }
 
-                Func::SetCursor(x, y + static_cast<int>(data.size()) + 3);
-                std::cout << "Press any key to return...";
-                _getch();
+                Func::SetCursor(x, y + static_cast<int>(data.size()) + 1);
             }
             else if (result == SQLITE_DONE)
             {
-                std::cout << "Could not find your profile.\n";
-                system("pause");
+                ConsoleMenu::output("Could not find your profile");
             }
             else
             {
                 std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-                system("pause");
             }
 
+            system("pause");
             sqlite3_finalize(stmt);
         }
 
@@ -525,22 +521,6 @@ namespace User
             sqlite3_bind_int(stmt, 1, attemptId);
             sqlite3_bind_int(stmt, 2, userId);
 
-            system("cls");
-            std::vector<std::string> text = {   "Category        : ",
-                                                "Test            : ",
-                                                "Started         : ",
-                                                "Finished        : ",
-                                                "Correct answers : ",
-                                                "Percent correct : ",
-                                                "Grade           : " };
-            int x = (Settings::widthConsole - 30) / 2;
-            int y = (Settings::heightConsole - text.size() - 3) / 2;
-            ConsoleMenu::inputFrame(48, 6 + text.size(), x, y, "             TEST  RESULT");
-            for (size_t i = 0; i < text.size(); i++)
-            {
-                Func::SetCursor(x, y + i + 2);
-                std::cout << text[i];
-            }
 
             const int result = sqlite3_step(stmt);
             if (result != SQLITE_ROW)
@@ -549,13 +529,11 @@ namespace User
 
                 if (result == SQLITE_DONE)
                 {
-                    Func::SetCursor(x, y + 2 + text.size());
-                    std::cout << "Could not find that completed result.";
+                    ConsoleMenu::output("Could not find that completed result.");
                 }
                 else
                     std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
 
-                Func::SetCursor(x, y + 3 + text.size());
                 system("pause");
                 return;
             }
@@ -589,18 +567,34 @@ namespace User
             const double percent = questionCount > 0
                 ? 100.0 * correctCount / questionCount
                 : 0.0;
-
             std::string count  = std::to_string(correctCount) + " / " + std::to_string(questionCount),
                         perc   = std::format("{:.1f}%", percent),
                         graded = std::to_string(grade) + " / 12";
+
+            system("cls");
+            std::vector<std::string> text = {   "Category        : ",
+                                                "Test            : ",
+                                                "Started         : ",
+                                                "Finished        : ",
+                                                "Correct answers : ",
+                                                "Percent correct : ",
+                                                "Grade           : " };
             std::vector<std::string> data = { category, test, started, finished, count, perc, graded};
+            int x = (Settings::widthConsole - 30) / 2;
+            int y = (Settings::heightConsole - text.size() - 3) / 2;
+            ConsoleMenu::infoFrame(48, 6 + text.size(), x, &y, "TEST  RESULT");
+            for (size_t i = 0; i < text.size(); i++)
+            {
+                Func::SetCursor(x, y + i);
+                std::cout << text[i];
+            }
             for (size_t i = 0; i < data.size(); i++)
             {
-                Func::SetCursor(x + 19, y + i + 2);
+                Func::SetCursor(x + 19, y + i);
                 std::cout << data[i];
             }
 
-            Func::SetCursor(x, y + 3 + text.size());
+            Func::SetCursor(x, y + 1 + text.size());
             system("pause");
         }
 
@@ -674,7 +668,7 @@ namespace User
 
             if (attemptIds.empty())
             {
-                std::cout << "You have no completed tests yet.\n";
+                ConsoleMenu::output("You have no completed tests yet");
                 system("pause");
                 return;
             }

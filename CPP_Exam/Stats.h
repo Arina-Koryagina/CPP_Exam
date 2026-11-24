@@ -70,33 +70,35 @@ namespace Admin
 
             sqlite3_bind_int(stmt, 1, id);
 
+
             system("cls");
             std::vector<std::string> text = { "Times completed : ", "Average grade   : ", "Percent correct : " };
             int x = (Settings::widthConsole - 30) / 2;
             int y = (Settings::heightConsole - text.size() - 3) / 2;
-            ConsoleMenu::inputFrame(40, 6 + text.size(), x, y, title);
-            for (size_t i = 0; i < text.size(); i++)
-            {
-                Func::SetCursor(x, y + i + 2);
-                std::cout << text[i];
-            }
-
             const int result = sqlite3_step(stmt);
             if (result == SQLITE_ROW)
             {
+                
+                ConsoleMenu::infoFrame(40, 6 + text.size(), x, &y, title);
+                for (size_t i = 0; i < text.size(); i++)
+                {
+                    Func::SetCursor(x, y + i);
+                    std::cout << text[i];
+                }
+
                 const int columns = sqlite3_column_count(stmt);
 
                 for (int i = 0; i < columns; ++i)
                 {
                     const auto* value = sqlite3_column_text(stmt, i);
 
-                    Func::SetCursor(x + 21, y + i + 2);
+                    Func::SetCursor(x + 21, y + i);
                     std::cout << (value ? reinterpret_cast<const char*>(value) : "0");
                 }
             }
             else if (result == SQLITE_DONE)
             {
-                std::cout << "No completed attempts yet.\n";
+                std::cout << "No completed attempts yet.";
             }
             else
             {
@@ -104,7 +106,7 @@ namespace Admin
             }
 
             sqlite3_finalize(stmt);
-            Func::SetCursor(x, y + 3 + text.size());
+            Func::SetCursor(x, y + 1 + text.size());
             system("pause");
         }
 
@@ -128,7 +130,7 @@ namespace Admin
                 if (categoryId < 0)
                     return;
 
-                showReport(sql, categoryId, "     CATEGORY  STATISTICS");
+                showReport(sql, categoryId, "CATEGORY  STATISTICS");
             }
         }
 
@@ -162,7 +164,7 @@ namespace Admin
                         "FROM attempts "
                         "WHERE test_id = ? AND status = 'completed';",
                         testId,
-                        "       TEST  STATISTICS");
+                        "TEST  STATISTICS");
                 }
             }
         }

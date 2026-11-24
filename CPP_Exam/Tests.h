@@ -203,7 +203,14 @@ namespace Admin
             if (questionResult != SQLITE_DONE)
                 std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
             else if (!foundQuestions)
-                std::cout << "This test has no questions yet.\n";
+            {
+                std::vector<std::string> options = { "(No active questions in this test)", "Back" };
+                ConsoleMenu::Menu::verticalMenu(
+                        "   QUESTIONS   ",
+                        options,
+                        ConsoleMenu::HorizontalAlignment::Center);
+                return;
+            }
 
             system("pause");
         }
@@ -289,7 +296,7 @@ namespace Admin
 
             if (value.empty())
             {
-                std::cout << "This field cannot be empty.\n";
+                ConsoleMenu::output("This field cannot be empty");
                 system("pause");
                 return false;
             }
@@ -400,18 +407,18 @@ namespace Admin
 
             if (result == SQLITE_DONE && changedRows > 0)
             {
-                std::cout << successMessage << '\n';
+                std::cout << successMessage;
                 system("pause");
                 return true;
             }
-
+            
             if (result == SQLITE_DONE)
-                std::cout << "Record not found.\n";
+                ConsoleMenu::output("Record not found");
             else if (result == SQLITE_CONSTRAINT)
-                std::cout << "That name is already in use.\n";
+                ConsoleMenu::output("That name is already in use");
             else
                 std::cerr << "Database error: " << error << '\n';
-
+            
             system("pause");
             return false;
         }
@@ -503,9 +510,9 @@ namespace Admin
             sqlite3_finalize(stmt);
 
             if (result == SQLITE_DONE)
-                std::cout << "Category added.\n";
+                ConsoleMenu::output("Category added");
             else if (result == SQLITE_CONSTRAINT)
-                std::cout << "That category already exists.\n";
+                ConsoleMenu::output("That category already exists");
             else
                 std::cerr << "Database error: " << error << '\n';
 
@@ -541,7 +548,7 @@ namespace Admin
                 sqlite3_finalize(stmt);
 
                 if (result == SQLITE_DONE)
-                    std::cout << "Test added.\n";
+                    ConsoleMenu::output("Test added");
                 else
                     std::cerr << "Database error: " << error << '\n';
 
@@ -595,7 +602,7 @@ namespace Admin
 
                     if (result == SQLITE_DONE)
                     {
-                        std::cout << "Question added.\n";
+                        ConsoleMenu::output("Question added");
 
                         const int questionId = static_cast<int>(sqlite3_last_insert_rowid(db));
                         addAnswer(categoryId, testId, questionId);
@@ -688,7 +695,7 @@ namespace Admin
             sqlite3_finalize(stmt);
 
             if (result == SQLITE_DONE)
-                std::cout << "Answer added.\n";
+                ConsoleMenu::output("Answer added");
             else
                 std::cerr << "Database error: " << error << '\n';
 
@@ -877,9 +884,9 @@ namespace Admin
                                 sqlite3_finalize(stmt);
 
                                 if (result == SQLITE_DONE && changedRows > 0)
-                                    std::cout << "Answer updated.\n";
+                                    ConsoleMenu::output("Answer updated");
                                 else if (result == SQLITE_DONE)
-                                    std::cout << "Answer not found.\n";
+                                    ConsoleMenu::output("Answer not found");
                                 else
                                     std::cerr << "Database error: " << error << '\n';
 

@@ -8,7 +8,6 @@
 #include "Settings.h"
 #include "Func.h"
 
-
 namespace ConsoleMenu
 {
 	enum HorizontalAlignment
@@ -23,7 +22,9 @@ namespace ConsoleMenu
 
 	void frame(int width, int height, int xPos, int yPos);
 
-	void inputFrame(int width, int height, int x, int y, const std::string&& header);
+	void output(const std::string text);
+
+	void infoFrame(int width, int height, int x, int* y, const std::string&& header);
 
 	class Menu
 	{

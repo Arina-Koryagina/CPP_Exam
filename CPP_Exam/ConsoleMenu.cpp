@@ -32,17 +32,42 @@ void ConsoleMenu::frame(int width, int height, int xPos, int yPos)
 	SetConsoleOutputCP(65001);
 }
 
-void ConsoleMenu::inputFrame(int width, int height, int x, int y, const std::string&& header)
+void ConsoleMenu::output(const std::string text)
 {
 	system("cls");
-	ConsoleMenu::frame(width, height, x - 5, y - 2);
+	int width = (text.size() > 33) ? text.size() : 33,
+		x = (Settings::widthConsole - width - 10) / 2,
+		y = (Settings::heightConsole - 4) / 2;
+
+	ConsoleMenu::frame(width + 10, 5, x - 5, y - 2);
+
 	Func::SetCursor(x, y);
+	size_t set = (width - text.size()) / 2;
+	for (size_t i = 0; i < set; i++)
+		std::cout << ' ';
+	std::cout << text;
+
+	Func::SetCursor(x, y + 2);
+}
+
+void ConsoleMenu::infoFrame(int width, int height, int x, int* y, const std::string&& header)
+{
+	system("cls");
+	if (width < 43) { width = 43; }
+
+	ConsoleMenu::frame(width, height, x - 5, *y - 2);
+
+	Func::SetCursor(x, *y);
+	size_t set = (width - 10 - header.size()) / 2;
+	for (size_t i = 0; i < set; i++)
+		std::cout << ' ';
 	std::cout << header;
-	Func::SetCursor(x, y + 1);
+
+	Func::SetCursor(x, *y + 1);
 	for (int i = 0; i < width - 10; i++)
-	{
 		std::cout << '=';
-	}
+
+	Func::SetCursor(x, *y + 3); *y += 2;
 }
 
 void ConsoleMenu::Menu::init()

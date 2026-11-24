@@ -28,7 +28,8 @@ namespace test
 		    Func::SetColor(Settings::textColorConsole, Settings::backColorConsole);
 		    system("cls");
 		    sqlite3* database = nullptr;
-		    if (sqlite3_open("TestingSystem.db", &database) != SQLITE_OK)
+		    //if (sqlite3_open("TestingSystem.db", &database) != SQLITE_OK)
+		    if (sqlite3_open("testing.db", &database) != SQLITE_OK)
 			    return 1;
             Admin::db = database;
             User::db = database;
