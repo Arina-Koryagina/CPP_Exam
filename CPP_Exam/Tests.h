@@ -41,8 +41,10 @@ namespace Admin
         void addCategory();
 
         void addTest();
+        void addTest(int categoryId);
 
         void addQuestion();
+        void addQuestion(int categoryId, int testId);
 
         void addAnswer();
         void addAnswer(int categoryId, int testId, int questionId);

@@ -288,10 +288,17 @@ namespace Admin
 
     bool Tests::readField(const char* prompt, std::string& value)
     {
+        system("cls");
+        int x = (Settings::widthConsole - 40) / 2;
+        int y = (Settings::heightConsole - 1) / 2;
+        ConsoleMenu::frame(50, 5, x - 5, y - 2);
+        Func::SetCursor(x, y);
         std::cout << prompt;
 
+        Func::SetCursor(x + std::strlen(prompt), y);
         if (Func::readConsoleInput(value) == Func::InputResult::cancelled)
         {
+            Func::SetCursor(x, y + 2);
             system("cls");
             return false;
         }
@@ -513,9 +520,14 @@ namespace Admin
         sqlite3_finalize(stmt);
 
         if (result == SQLITE_DONE)
+        {
             ConsoleMenu::output("Category added");
+            system("pause");
+            const int categoryId = static_cast<int>(sqlite3_last_insert_rowid(db));
+            addTest(categoryId);
+        }
         else if (result == SQLITE_CONSTRAINT)
-            ConsoleMenu::output("That category already exists");
+            std::cout << "That category already exists";
         else
             std::cerr << "Database error: " << error << '\n';
 
@@ -530,33 +542,42 @@ namespace Admin
             if (categoryId < 0)
                 return;
 
-            std::string title;
-            if (!readField("Test title: ", title))
-                return;
-
-            sqlite3_stmt* stmt = nullptr;
-            if (sqlite3_prepare_v2(db,
-                "INSERT INTO tests (category_id, title) VALUES (?, ?);",
-                -1, &stmt, nullptr) != SQLITE_OK)
-            {
-                std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-                return;
-            }
-
-            sqlite3_bind_int(stmt, 1, categoryId);
-            sqlite3_bind_text(stmt, 2, title.c_str(), -1, SQLITE_TRANSIENT);
-
-            const int result = sqlite3_step(stmt);
-            const std::string error = sqlite3_errmsg(db);
-            sqlite3_finalize(stmt);
-
-            if (result == SQLITE_DONE)
-                ConsoleMenu::output("Test added");
-            else
-                std::cerr << "Database error: " << error << '\n';
-
-            system("pause");
+            addTest(categoryId);
         }
+    }
+    void Tests::addTest(int categoryId)
+    {
+        std::string title;
+        if (!readField("Test title: ", title))
+            return;
+
+        sqlite3_stmt* stmt = nullptr;
+        if (sqlite3_prepare_v2(db,
+            "INSERT INTO tests (category_id, title) VALUES (?, ?);",
+            -1, &stmt, nullptr) != SQLITE_OK)
+        {
+            std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+            return;
+        }
+
+        sqlite3_bind_int(stmt, 1, categoryId);
+        sqlite3_bind_text(stmt, 2, title.c_str(), -1, SQLITE_TRANSIENT);
+
+        const int result = sqlite3_step(stmt);
+        const std::string error = sqlite3_errmsg(db);
+        sqlite3_finalize(stmt);
+
+        if (result == SQLITE_DONE)
+        {
+            ConsoleMenu::output("Test added");
+            system("pause");
+            const int testId = static_cast<int>(sqlite3_last_insert_rowid(db));
+            addQuestion(categoryId, testId);
+        }
+        else
+            std::cerr << "Database error: " << error << '\n';
+
+        system("pause");
     }
 
     void Tests::addQuestion()
@@ -573,55 +594,60 @@ namespace Admin
                 if (testId < 0)
                     break; // back to Category list
 
-                std::string prompt;
-                if (!readField("Question text: ", prompt))
-                    return;
-
-                const int position = nextPosition(
-                    "SELECT COALESCE(MAX(position), 0) + 1 "
-                    "FROM questions WHERE test_id = ?;",
-                    testId);
-
-                if (position < 0)
-                    return;
-
-                sqlite3_stmt* stmt = nullptr;
-                if (sqlite3_prepare_v2(db,
-                    "INSERT INTO questions (test_id, prompt, position) "
-                    "VALUES (?, ?, ?);",
-                    -1, &stmt, nullptr) != SQLITE_OK)
-                {
-                    std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
-                    return;
-                }
-
-                sqlite3_bind_int(stmt, 1, testId);
-                sqlite3_bind_text(stmt, 2, prompt.c_str(), -1, SQLITE_TRANSIENT);
-                sqlite3_bind_int(stmt, 3, position);
-
-                const int result = sqlite3_step(stmt);
-                const std::string error = sqlite3_errmsg(db);
-                sqlite3_finalize(stmt);
-
-                if (result == SQLITE_DONE)
-                {
-                    ConsoleMenu::output("Question added");
-
-                    const int questionId = static_cast<int>(sqlite3_last_insert_rowid(db));
-                    addAnswer(categoryId, testId, questionId);
-                    while (true)
-                    {
-                        const int questionId = chooseQuestion(testId);
-                        if (questionId < 0)
-                            break; // back to Test list
-
-                        addAnswer(categoryId, testId, questionId);
-                    }
-                }
-                else
-                    std::cerr << "Database error: " << error << '\n';
+                addQuestion(categoryId, testId);
             }
         }
+    }
+    void Tests::addQuestion(int categoryId, int testId)
+    {
+        std::string prompt;
+        if (!readField("Question text: ", prompt))
+            return;
+
+        const int position = nextPosition(
+            "SELECT COALESCE(MAX(position), 0) + 1 "
+            "FROM questions WHERE test_id = ?;",
+            testId);
+
+        if (position < 0)
+            return;
+
+        sqlite3_stmt* stmt = nullptr;
+        if (sqlite3_prepare_v2(db,
+            "INSERT INTO questions (test_id, prompt, position) "
+            "VALUES (?, ?, ?);",
+            -1, &stmt, nullptr) != SQLITE_OK)
+        {
+            std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
+            return;
+        }
+
+        sqlite3_bind_int(stmt, 1, testId);
+        sqlite3_bind_text(stmt, 2, prompt.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(stmt, 3, position);
+
+        const int result = sqlite3_step(stmt);
+        const std::string error = sqlite3_errmsg(db);
+        sqlite3_finalize(stmt);
+
+        if (result == SQLITE_DONE)
+        {
+            ConsoleMenu::output("Question added");
+            system("pause");
+
+            const int questionId = static_cast<int>(sqlite3_last_insert_rowid(db));
+            addAnswer(categoryId, testId, questionId);
+            while (true)
+            {
+                const int questionId = chooseQuestion(testId);
+                if (questionId < 0)
+                    break; // back to Test list
+
+                addAnswer(categoryId, testId, questionId);
+            }
+        }
+        else
+            std::cerr << "Database error: " << error << '\n';
     }
 
     void Tests::addAnswer()
