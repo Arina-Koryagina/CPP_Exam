@@ -32,14 +32,12 @@ namespace test
 		    //if (sqlite3_open("TestingSystem.db", &database) != SQLITE_OK)
 		    if (sqlite3_open("testing.db", &database) != SQLITE_OK)
 			    return 1;
-            Admin::db = database;
-            User::db = database;
 
             if (isDatabaseEmpty(database))
             {
                 std::vector<std::string> options = { "Create Admin", "Settings", "Exit" };
-                bool adminCreated = true;
-                while (adminCreated)
+                bool adminCreated = false;
+                while (!adminCreated)
                 {
                     int choice = ConsoleMenu::Menu::verticalMenu("   MAIN  MENU   ", options, ConsoleMenu::HorizontalAlignment::Center);
                     switch (choice)
@@ -47,8 +45,9 @@ namespace test
                     case 0:
                     {
                         login(database);
-                        adminCreated = false;
-                        Admin::Admin::Menu();
+                        adminCreated = true;
+                        Admin::Admin admin(database);
+                        admin.Menu();
                         break;
                     }
                     case 1:
@@ -74,12 +73,13 @@ namespace test
 
                     if (result.role == LoginResult::Role::admin)
                     {
-                        Admin::Admin::Menu();
+                        Admin::Admin admin(database);
+                        admin.Menu();
                     }
                     else if (result.role == LoginResult::Role::user)
                     {
-                        User::User::setId(result.userId);
-                        User::User::Menu();
+                        User::User user(database, result.userId);
+                        user.Menu();
                     }
                     break;
                 }

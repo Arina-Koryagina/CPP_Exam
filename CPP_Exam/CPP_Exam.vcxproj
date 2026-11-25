@@ -145,7 +145,10 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="sqlite3.c" />
+    <ClCompile Include="Stats.cpp" />
+    <ClCompile Include="Tests.cpp" />
     <ClCompile Include="TestSystemApp.cpp" />
+    <ClCompile Include="User.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Admin.h" />

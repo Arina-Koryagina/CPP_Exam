@@ -3,6 +3,7 @@
 #include <conio.h>
 #include <Windows.h>
 #include <string>
+#include "sqlite3.h"
 
 namespace Func
 {
@@ -79,4 +80,6 @@ namespace Func
             }
         }
     }
+
+    //sqlite3_stmt* stmt
 }

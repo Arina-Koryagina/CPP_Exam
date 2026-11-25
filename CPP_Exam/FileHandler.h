@@ -3,8 +3,8 @@
 
 namespace Admin
 {
-    static void filesMenu()
+    inline void filesMenu()
     {
-
+        ConsoleMenu::output("Feature not implemented yet");
     }
 }

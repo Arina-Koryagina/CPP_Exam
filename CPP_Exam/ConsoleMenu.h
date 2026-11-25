@@ -51,7 +51,6 @@ namespace ConsoleMenu
 
 
 	public:
-
 		static void consoleSettings()
 		{
 			init();

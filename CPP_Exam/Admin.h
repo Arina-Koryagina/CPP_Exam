@@ -10,30 +10,35 @@
 
 namespace Admin
 {
-    bool createTable();
+    bool createTable(sqlite3* db);
 
     class Users
     {
-        static void show();
+        sqlite3* db = nullptr;
 
-        static void add();
+        void show();
 
-        static void edit();
+        void add();
 
-        static void del();
+        void edit();
+
+        void del();
 
     public:
-        static int select(sqlite3_stmt* stmt);
+        explicit Users(sqlite3* database) : db(database) {}
 
-        static void Menu();
+        static int select(sqlite3* db, sqlite3_stmt* stmt);
+
+        void Menu();
     };
 
     class Admin
     {
+        sqlite3* db = nullptr;
         std::string login;
         std::string passwordHash;
 
-        static void changeCredentials()
+        void changeCredentials()
         {
             sqlite3_stmt* stmt = nullptr;
             if (sqlite3_prepare_v2(db,
@@ -175,8 +180,8 @@ namespace Admin
         }
 
     public:
-        Admin() = default;
-        Admin(const std::string& login, const std::string& password) : login(login), passwordHash(md5(password)) {}
+        explicit Admin(sqlite3* database) : db(database) {}
+        Admin(sqlite3* database, const std::string& login, const std::string& password) : db(database), login(login), passwordHash(md5(password)) {}
 
         bool save() const
         {
@@ -201,6 +206,6 @@ namespace Admin
             return success;
         }
 
-        static void Menu();
+        void Menu();
     };
 }

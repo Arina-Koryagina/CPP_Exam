@@ -23,7 +23,7 @@ namespace test
         return result == SQLITE_DONE;
     }
 
-    static bool createTestTables(sqlite3* db)
+    bool createTestTables(sqlite3* db)
     {
         const char* sql = R"SQL(
         PRAGMA foreign_keys = ON;
@@ -95,7 +95,7 @@ namespace test
 
     LoginResult login(sqlite3* db)
     {
-        if (!Admin::createTable())
+        if (!Admin::createTable(db))
             return { LoginResult::Role::failed, -1 };
 
         // The sign-up code should use this same table and hash both values.
@@ -161,7 +161,7 @@ namespace test
             sqlite3_finalize(stmt);
 
             // First system login creates the admin account with these credentials.
-            Admin::Admin firstAdmin(loginName, password);
+            Admin::Admin firstAdmin(db, loginName, password);
             if (firstAdmin.save())
             {
                 Func::SetCursor(x, y + 3);

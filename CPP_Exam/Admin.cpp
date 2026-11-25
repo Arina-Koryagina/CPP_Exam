@@ -3,7 +3,7 @@
 
 namespace Admin
 {
-    bool createTable()
+    bool createTable(sqlite3* db)
     {
         const char* sql =
             "CREATE TABLE IF NOT EXISTS admin ("
@@ -40,11 +40,11 @@ namespace Admin
                 return;
             }
 
-            const int selectedUserId = select(stmt);
+            const int selectedUserId = select(db, stmt);
             if (selectedUserId < 0)
                 return;
     
-            User::User user(selectedUserId);
+            User::User user(db, selectedUserId);
             user.showProfile();
         }
     }
@@ -177,7 +177,7 @@ namespace Admin
             return;
         }
 
-        int userId = Users::select(stmt);
+        int userId = Users::select(db, stmt);
         if (userId < 0)
             return;
     
@@ -334,7 +334,7 @@ namespace Admin
                 return;
             }
 
-            int userId = Users::select(stmt);
+            int userId = Users::select(db, stmt);
             if (userId < 0)
                 return;
 
@@ -396,7 +396,7 @@ namespace Admin
                     sqlite3_finalize(stmt);
 
                     if (userResult == SQLITE_DONE)
-                        std::cout << "User not found.\n";
+                        ConsoleMenu::output("User not found");
                     else
                         std::cerr << "Database error: " << sqlite3_errmsg(db) << '\n';
 
@@ -459,7 +459,7 @@ namespace Admin
         }
     }
 
-    int Users::select(sqlite3_stmt* stmt)
+    int Users::select(sqlite3* db, sqlite3_stmt* stmt)
     {
         std::vector<int> userIds;
         std::vector<std::string> options;
@@ -545,14 +545,23 @@ namespace Admin
             switch (choice)
             {
             case 0:
-                Tests::Menu();
+            {
+                Tests tests(db);
+                tests.Menu();
                 break;
+            }
             case 1:
-                Users::Menu();
+            {
+                Users user(db);
+                user.Menu();
                 break;
+            }
             case 2:
-                Stats::Menu();
+            {
+                Stats stats(db);
+                stats.Menu();
                 break;
+            }
             case 3:
                 changeCredentials();
                 break;
